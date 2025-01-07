@@ -5,6 +5,14 @@ import maya.cmds as cmd
 
 # This is to stop the recursive mapInConnections function from going outside of shading nodes when looking for incoming connections
 STOPCRAWLINGTYPES = ["colorManagementGlobals", "place2dTexture", "lightLinker", "materialInfo", "nodeGraphEditorInfo", "partition", "defaultShaderList"]
+
+ARNOLD_TO_COMMON = {
+    "aiStandardSurafce": {
+        "base": "diffuseWeight",
+        "baseColor": "diffuseColor"
+    },
+}
+
 ### }}}
 
 ### {{{ class definitions
