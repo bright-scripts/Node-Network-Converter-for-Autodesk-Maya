@@ -56,30 +56,43 @@ def getSelected() -> list[Node]:
 
     return sNodes
 
-def populateConnectionsData(node: Node) -> Node:
+def populateInConnectionsData(node: Node) -> Node:
     '''
-    Returns the given node with incoming and outgoing connection data populated
+    Returns the given node with outgoing connection data populated
     Duh, I know. ...
     '''
 
     incomingConnections: list[str] = []
-    outgoingConnections: list[str] = []
 
     inConTemp = cmd.listConnections(node.name, s = True, d = False, fnn = True, plugs = True)
     if inConTemp != None:
         for y in inConTemp:
             if cmd.nodeType(y) not in STOPCRAWLINGTYPES:
                 incomingConnections.append(y)
-        node.inCon = incomingConnections
+
+        if len(incomingConnections) != 0:
+            node.inCon = incomingConnections
+
+    return node
+
+
+def populateOutConnectionsData(node: Node) -> Node:
+    '''
+    Returns the given node with incoming and outgoing connection data populated
+    Duh, I know. ...
+    '''
+
+    outgoingConnections: list[str] = []
 
     outConTemp = cmd.listConnections(node.name, s = False, d = True, fnn = True, plugs = True)
     if outConTemp != None:
         for y in outConTemp:
             if cmd.nodeType(y) not in STOPCRAWLINGTYPES:
                 outgoingConnections.append(y)
-        node.outCon = outgoingConnections
 
-    print(node) #debugLine
+        if len(outgoingConnections) != 0:
+            node.outCon = outgoingConnections
+
     return node
 
 
@@ -90,14 +103,34 @@ def mapInConnections(nodeConnection: str, nodes: list[Node]) -> list[Node]:
 
     nodeName = nodeConnection.split(".")[0]
     node = Node(name= nodeName, nType= cmd.nodeType(nodeName))
-    node = populateConnectionsData(node)
+    node = populateInConnectionsData(node)
     nodes.append(node)
+    print(node) #debugline
 
     #print(node) #debugline
 
     if node.inCon != None:
         for x in node.inCon:
             mapInConnections(x, nodes)
+
+    return nodes
+
+def mapOutConnections(nodeConnection: str, nodes: list[Node]) -> list[Node]:
+    '''
+    Returns the given list[Node] extended with all the nodes connected to nodeConnection.
+    '''
+
+    nodeName = nodeConnection.split(".")[0]
+    node = Node(name= nodeName, nType= cmd.nodeType(nodeName))
+    node = populateOutConnectionsData(node)
+    nodes.append(node)
+    print(node) #debugline
+
+    #print(node) #debugline
+
+    if node.outCon != None:
+        for x in node.outCon:
+            mapOutConnections(x, nodes)
 
     return nodes
 
@@ -110,7 +143,9 @@ def crawlNodeTree(sNodes: list[Node]):
 
     # {{{ Looking for incoming and outgoing connections and assigning them to their respective sNode item
     for i in range(0, len(sNodes)):
-        sNodes[i] = populateConnectionsData(sNodes[i])
+        sNodes[i] = populateInConnectionsData(sNodes[i])
+        sNodes[i] = populateOutConnectionsData(sNodes[i])
+        print(sNodes[i]) #debugLine
     # }}}
 
 
