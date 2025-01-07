@@ -1,30 +1,38 @@
 import maya.cmds as cmd
 
+
+### {{{ CONSTANT definitions
+
+# This is to stop the recursive mapInConnections function from going outside of shading nodes when looking for incoming connections
+STOPCRAWLINGTYPES = ["colorManagementGlobals", "place2dTexture"]
+### }}}
+
 ### {{{ class definitions
 
 class Node:
-    def __init__(self, name, nType, inCon = "Unassigned", outCon = "Unassigned", selected = False):
+    def __init__(self, name, nType, inCon = None, outCon = None, selected = False):
         self.name: str = name
         self.nType: str = nType
         self.selected: bool = selected
-        self.inCon: list[Node] | str = inCon
-        self.outCon: list[Node] | str = outCon
+        # Consider only storing the name of the connected nodes, bc you'll store them as well as their own Node object.
+        self.inCon: list[str] | None = inCon
+        self.outCon: list[str] | None = outCon
 
     def __str__(self) -> str:
         inConStr: str = ""
         outConStr: str = ""
 
-        if self.inCon != "Unassigned":
+        if self.inCon != None:
             for x in self.inCon:
-                inConStr+= (f"- {x.name}\n")
+                inConStr+= (f"- {x}\n")
         else:
-            inConStr = self.inCon
+            inConStr = "- None\n"
 
-        if self.outCon != "Unassigned":
+        if self.outCon != None:
             for x in self.outCon:
-                outConStr+= (f"- {x.name}\n")
+                outConStr+= (f"- {x}\n")
         else:
-            outConStr = self.outCon
+            outConStr = "- None\n"
 
 
         r = f"Name: {self.name}\nType: {self.nType}\nSelected: {self.selected}\nInCon:\n{inConStr}OutCon:\n{outConStr}-----\n"
@@ -54,21 +62,44 @@ def populateConnectionsData(node: Node) -> Node:
     Duh, I know. ...
     '''
 
-    incomingConnections: list[Node] = []
-    outgoingConnections: list[Node] = []
+    incomingConnections: list[str] = []
+    outgoingConnections: list[str] = []
 
     inConTemp = cmd.listConnections(node.name, s = True, d = False, fnn = True, plugs = True)
-    for y in inConTemp:
-        incomingConnections.append(Node(y, cmd.nodeType(y)))
-    node.inCon = incomingConnections
+    if inConTemp != None:
+        for y in inConTemp:
+            if cmd.nodeType(y) not in STOPCRAWLINGTYPES:
+                incomingConnections.append(y)
+        node.inCon = incomingConnections
 
-    outGoTemp = cmd.listConnections(node.name, s = False, d = True, fnn = True, plugs = True)
-    for y in outGoTemp:
-        outgoingConnections.append(Node(y, cmd.nodeType(y)))
-    node.outCon = outgoingConnections
+    outConTemp = cmd.listConnections(node.name, s = False, d = True, fnn = True, plugs = True)
+    if outConTemp != None:
+        for y in outConTemp:
+            if cmd.nodeType(y) not in STOPCRAWLINGTYPES:
+                outgoingConnections.append(y)
+        node.outCon = outgoingConnections
 
     print(node) #debugLine
     return node
+
+
+def mapInConnections(nodeConnection: str, nodes: list[Node]) -> list[Node]:
+    '''
+    Returns the given list[Node] extended with all the nodes connected to nodeConnection.
+    '''
+
+    nodeName = nodeConnection.split(".")[0]
+    node = Node(name= nodeName, nType= cmd.nodeType(nodeName))
+    node = populateConnectionsData(node)
+    nodes.append(node)
+
+    #print(node) #debugline
+
+    if node.inCon != None:
+        for x in node.inCon:
+            mapInConnections(x, nodes)
+
+    return nodes
 
 def crawlNodeTree(sNodes: list[Node]):
     '''
@@ -81,6 +112,17 @@ def crawlNodeTree(sNodes: list[Node]):
     for i in range(0, len(sNodes)):
         sNodes[i] = populateConnectionsData(sNodes[i])
     # }}}
+
+
+    for i in range(0, 3): #debugline
+        print("/////////////////////////////////////////") #debugline
+
+    nodes: list[Node] = sNodes
+    for i in range(0, len(sNodes)):
+        if sNodes[i] != None:
+            for x in sNodes[i].inCon:
+                mapInConnections(x, nodes)
+
 
     return sNodes
 
