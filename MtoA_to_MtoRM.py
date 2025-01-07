@@ -4,7 +4,7 @@ import maya.cmds as cmd
 ### {{{ CONSTANT definitions
 
 # This is to stop the recursive mapInConnections function from going outside of shading nodes when looking for incoming connections
-STOPCRAWLINGTYPES = ["colorManagementGlobals", "place2dTexture"]
+STOPCRAWLINGTYPES = ["colorManagementGlobals", "place2dTexture", "lightLinker", "materialInfo", "nodeGraphEditorInfo", "partition", "defaultShaderList"]
 ### }}}
 
 ### {{{ class definitions
@@ -14,7 +14,6 @@ class Node:
         self.name: str = name
         self.nType: str = nType
         self.selected: bool = selected
-        # Consider only storing the name of the connected nodes, bc you'll store them as well as their own Node object.
         self.inCon: list[str] | None = inCon
         self.outCon: list[str] | None = outCon
 
@@ -98,7 +97,7 @@ def populateOutConnectionsData(node: Node) -> Node:
 
 def mapInConnections(nodeConnection: str, nodes: list[Node]) -> list[Node]:
     '''
-    Returns the given list[Node] extended with all the nodes connected to nodeConnection.
+    Returns the given list[Node] extended with all the nodes (incoming) connected to nodeConnection.
     '''
 
     nodeName = nodeConnection.split(".")[0]
@@ -117,7 +116,7 @@ def mapInConnections(nodeConnection: str, nodes: list[Node]) -> list[Node]:
 
 def mapOutConnections(nodeConnection: str, nodes: list[Node]) -> list[Node]:
     '''
-    Returns the given list[Node] extended with all the nodes connected to nodeConnection.
+    Returns the given list[Node] extended with all the nodes (outgoing) connected to nodeConnection.
     '''
 
     nodeName = nodeConnection.split(".")[0]
@@ -157,9 +156,11 @@ def crawlNodeTree(sNodes: list[Node]):
         if sNodes[i] != None:
             for x in sNodes[i].inCon:
                 mapInConnections(x, nodes)
+            for x in sNodes[i].outCon:
+                mapOutConnections(x, nodes)
 
 
-    return sNodes
+    return nodes
 
 def convertNodeTree(map):
 
