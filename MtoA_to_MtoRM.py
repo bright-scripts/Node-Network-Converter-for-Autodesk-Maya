@@ -6,10 +6,49 @@ import maya.cmds as cmd
 # This is to stop the recursive mapInConnections function from going outside of shading nodes when looking for incoming connections
 STOPCRAWLINGTYPES = ["colorManagementGlobals", "place2dTexture", "lightLinker", "materialInfo", "nodeGraphEditorInfo", "partition", "defaultShaderList"]
 
-ARNOLD_TO_COMMON = {
-    "aiStandardSurafce": {
-        "base": "diffuseWeight",
-        "baseColor": "diffuseColor"
+# Render engine table for dict selection
+FROMENGINES = {
+    "Arnold": "ARNOLD_TO_COMMON",
+    "RenderMan": "RENDERMAN_TO_COMMON"
+}
+TOENGINES = {
+    "Arnold": "COMMON_TO_ARNOLD",
+    "RenderMan": "COMMON_TO_RENDERMAN"
+}
+
+# Arnold nodes and components "translated" to engine independent attribute names
+# in the long run this should make adding more render engines to this script easier.
+# Despite that, the naming conventions will most likely have to be modified down the line
+
+ENGINECONVERSIONS ={
+
+    "ARNOLD_TO_COMMON": {
+        "aiStandardSurafce": {
+            "base": "diffuseWeight",
+            "baseColor": "diffuseColor"
+        },
+        "file": {
+            "nodeTypeName": "textureFileNode",
+            "caching": "caching",
+            "frozen": "frozen",
+            "isHistoricallyInteresting": "isHistoricallyInteresting",
+            "nodeState": "nodeState",
+            #"binMembership": "binMembership",
+            "fileTextureName": "filename"
+        },
+    },
+
+    # "Translating" common attribute names to Renderman specific ones
+    "COMMON_TO_RENDERMAN": {
+        "textureFileNode": {
+            "nodeTypeName": "PxrTexture",
+            "caching": "caching",
+            "frozen": "frozen",
+            "isHistoricallyInteresting": "isHistoricallyInteresting",
+            "nodeState": "nodeState",
+            #"binMembership": "binMembership",
+            "filename": "filename"
+        },
     },
 }
 
@@ -170,17 +209,70 @@ def crawlNodeTree(sNodes: list[Node]):
 
     return nodes
 
-def convertNodeTree(map):
 
+def convertNode(node: Node, fromEngine: str, toEngine: str):
+    '''
+    Convert the given node from the provided fromEngine engine's own system to the toEngine's equivalent node
+    '''
+
+    # {{{ DONE: get and store existing attributes in the "common" types
+    conversionDict = ENGINECONVERSIONS[FROMENGINES[fromEngine]]
+
+    nodeInfo: dict = {}
+    isFirstIteration = True
+    for x in conversionDict[node.nType]:
+        if isFirstIteration: # getting corresponding common nodeTypeName
+            nodeInfo[f"{x}"] = conversionDict[node.nType]["nodeTypeName"]
+            isFirstIteration = False
+            continue
+        nodeInfo[f"{conversionDict[node.nType][x]}"] = cmd.getAttr(f"{node.name}.{x}")
+        nodeInfo[f"{conversionDict[node.nType][x]}-type"] = cmd.getAttr(f"{node.name}.{x}",typ = True)
+
+    print("######################################") #debugline
+    print(nodeInfo) #debugline
+    # }}}
+
+    # {{{ TODO: convert common type to toEngine's types
+    #           & spawn toEngine node with converted attributes
+    conversionDict = ENGINECONVERSIONS[TOENGINES[toEngine]]
+
+    newNode = cmd.shadingNode(conversionDict[nodeInfo["nodeTypeName"]]["nodeTypeName"], asShader= True) # creating new node in hypershade
+    isFirstIteration = True
+    for x in conversionDict[nodeInfo["nodeTypeName"]]:
+        if isFirstIteration: # skipping node type dict entry (which is the first one in the dict) bc it is not a settable node attribute itself
+            isFirstIteration = False
+            continue 
+
+        nodeFieldData = nodeInfo[conversionDict[nodeInfo["nodeTypeName"]][f"{x}"]]
+        nodeFieldDataType = nodeInfo[f'{conversionDict[nodeInfo["nodeTypeName"]][f"{x}"]}-type']
+        try: # This block is a solution for the fact that some node fields need a type as well a value to bi assignable, but not every field accepts a type.
+            cmd.setAttr(f"{newNode}.{x}", nodeFieldData) # setting attributes of the spawend node
+        except:
+            cmd.setAttr(f"{newNode}.{x}", nodeFieldData, typ= f"{nodeFieldDataType}") # setting attributes of the spawend node
+        print(f'SET {newNode}.{x} TO {nodeInfo[conversionDict[nodeInfo["nodeTypeName"]][f"{x}"]]}') #debugline
+    # }}}
+
+
+    return
+
+
+def convertNodeTree(nodes: list[Node], fromEngine: str, toEngine: str):
+
+    for x in nodes: #debuglines <- bc only testing for maya file nodes now
+        if x.nType == "file": #debuglines
+            convertNode(x, fromEngine, toEngine) #debuglines
     # newRMSurface = cmd.shadingNode("PxrSurface", asShader = True)
 
     return
 
 def main ():
 
+    fromEngine = "Arnold"
+    toEngine = "RenderMan"
+
     nodeTreeMapped = crawlNodeTree(getSelected())
 
-    convertNodeTree(nodeTreeMapped)
+    convertNodeTree(nodeTreeMapped, fromEngine, toEngine)
 
     return
 
