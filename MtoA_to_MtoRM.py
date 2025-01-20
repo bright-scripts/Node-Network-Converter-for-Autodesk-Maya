@@ -353,9 +353,15 @@ def convertNode(node: Node, fromEngine: str, toEngine: str):
     '''
 
     # {{{ DONE: get and store existing attributes in the "common" types
-    conversionDict = ENGINECONVERSIONS[FROMENGINES[fromEngine]]
+    conversionDict = ENGINECONVERSIONS[FROMENGINES[fromEngine]] # This returns a dict that contains subdictionaries of shader node information.
+    # ^ Key: nodeType (in fromEngine)
+    # ^ Value: dict of nodeType's fields
+    #			    ^ Key: node field's name in fromEngines format
+    #			    ^ Value: node field's name in the made up common node names specification
 
     nodeInfo: dict = {}
+    # ^ Key: Node field's name
+    # ^ Value: node field's value
     isFirstIteration = True
     for x in conversionDict[node.nType]:
         if isFirstIteration: # getting corresponding common nodeTypeName
@@ -364,6 +370,7 @@ def convertNode(node: Node, fromEngine: str, toEngine: str):
             continue
         nodeInfo[f"{conversionDict[node.nType][x]}"] = cmd.getAttr(f"{node.name}.{x}")
         nodeInfo[f"{conversionDict[node.nType][x]}-type"] = cmd.getAttr(f"{node.name}.{x}",typ = True)
+	# ^ set the value and type attributes for the node that's been passed in the function call; to the common node and fields names based on the madeup specification
 
     print("######################################") #debugline
     print(nodeInfo) #debugline
@@ -382,10 +389,11 @@ def convertNode(node: Node, fromEngine: str, toEngine: str):
 
         nodeFieldData = nodeInfo[conversionDict[nodeInfo["nodeTypeName"]][f"{x}"]]
         nodeFieldDataType = nodeInfo[f'{conversionDict[nodeInfo["nodeTypeName"]][f"{x}"]}-type']
-        try: # This block is a solution for the fact that some node fields need a type as well a value to bi assignable, but not every field accepts a type.
+        try: # This block is a solution for the fact that some node fields need a type as well a value to be assignable, but not every field accepts a type.
             cmd.setAttr(f"{newNode}.{x}", nodeFieldData) # setting attributes of the spawend node
         except:
-            cmd.setAttr(f"{newNode}.{x}", nodeFieldData, typ= f"{nodeFieldDataType}") # setting attributes of the spawend node
+            cmd.setAttr(f"{newNode}.{x}", nodeFieldData, typ= f"{nodeFieldDataType}") # setting attributes of the spawend node and also specifying a type
+	# ^ using the previously saved node field information create a new node and assign values from the original node fields to new node; using the common -> toEngine translated dictionary as a reference
         print(f'SET {newNode}.{x} TO {nodeInfo[conversionDict[nodeInfo["nodeTypeName"]][f"{x}"]]}') #debugline
     # }}}
 
