@@ -68,154 +68,122 @@ ENGINECONVERSIONS ={
 
     "ARNOLD_TO_COMMON": {
         "aiStandardSurface": {
-            "nodeTypeName": NodeField(commonName= "surfaceShader"),
-            "caching": NodeField(commonName= "caching"),
-            "frozen": NodeField(commonName= "frozen"),
-            "isHistoricallyInteresting": NodeField(commonName= "isHistoricallyInteresting"),
-            "nodeState": NodeField(commonName= "nodeState"),
-            "base": NodeField(commonName= "diffuseGain"),
-            "baseColor": NodeField(commonName= "diffuseColor"),
-            "baseColorR": NodeField(commonName= "diffuseColorR"),
-            "baseColorG": NodeField(commonName= "diffuseColorG"),
-            "baseColorB": NodeField(commonName= "diffuseColorB"),
-            "diffuseRoughness": NodeField(commonName= "diffuseRoughness"),
-            "thinWalled": NodeField(commonName= "floatSided"),
-            "thinWalled": NodeField(commonName= "diffuseBackUseDiffuseColor"),
-            "specular": NodeField(commonName= "specularGain"),
-            "specularColor": NodeField(commonName= "specularEdgeColor"),
-            "specularColorR": NodeField(commonName= "specularEdgeColorR"),
-            "specularColorG": NodeField(commonName= "specularEdgeColorG"),
-            "specularColorB": NodeField(commonName= "specularEdgeColorB"),
-            "specularIOR": NodeField(commonName= "specularior"),
-            "specularRoughness": NodeField(commonName= "specularRoughness"),
-            "specularAnisotropy": NodeField(commonName= "specularAnisotropy"),
-            "specularRotation": NodeField(commonName= "specularAnisotropyDirection"),
-            "tangentX": NodeField(commonName= "specularAnisotropyDirectionX"),
-            "tangentY": NodeField(commonName= "specularAnisotropyDirectionY"),
-            "tangentZ": NodeField(commonName= "specularAnisotropyDirectionZ"),
-            "thinWalled": NodeField(commonName= "specularfloatSided"),
-            "specularColor": NodeField(commonName= "roughSpecularEdgeColor"),
-            "specularColorR": NodeField(commonName= "roughSpecularEdgeColorR"),
-            "specularColorG": NodeField(commonName= "roughSpecularEdgeColorG"),
-            "specularColorB": NodeField(commonName= "roughSpecularEdgeColorB"),
-            "specularIOR": NodeField(commonName= "roughSpecularIor"),
-            "specularRoughness": NodeField(commonName= "roughSpecularRoughness", func= lambda x: x + 0.1 if 1 > x else x),
-            "specularAnisotropy": NodeField(commonName= "roughSpecularAnisotropy"),
-            "specularRotation": NodeField(commonName= "roughSpecularAnisotropyDirection"),
-            "tangentX": NodeField(commonName= "roughSpecularAnisotropyDirectionX"),
-            "tangentY": NodeField(commonName= "roughSpecularAnisotropyDirectionY"),
-            "tangentZ": NodeField(commonName= "roughSpecularAnisotropyDirectionZ"),
-            "thinWalled": NodeField(commonName= "roughSpecularfloatSided"),
-            "coat": NodeField(commonName= "coatGain"),
-            "coatColor": NodeField(commonName= "clearcoatEdgeColor"),
-            "coatColorR": NodeField(commonName= "clearcoatEdgeColorR"),
-            "coatColorG": NodeField(commonName= "clearcoatEdgeColorG"),
-            "coatColorB": NodeField(commonName= "clearcoatEdgeColorB"),
-            "coatIOR": NodeField(commonName= "clearcoatIor"),
-            "coatAffectColor": NodeField(commonName= "clearcoatThickness"),
-            "coatRoughness": NodeField(commonName= "clearcoatRoughness"),
-            "coatAnisotropy": NodeField(commonName= "clearcoatAnisotropy"),
-            "coatRotation": NodeField(commonName= "clearcoatAnisotropyDirection"),
-            "tangentX": NodeField(commonName= "clearcoatAnisotropyDirectionX"),
-            "tangentY": NodeField(commonName= "clearcoatAnisotropyDirectionY"),
-            "tangentZ": NodeField(commonName= "clearcoatAnisotropyDirectionZ"),
-            "coatNormal": NodeField(commonName= "clearcoatBumpNormal"),
-            "coatNormalX": NodeField(commonName= "clearcoatBumpNormalX"),
-            "coatNormalY": NodeField(commonName= "clearcoatBumpNormalY"),
-            "coatNormalZ": NodeField(commonName= "clearcoatBumpNormalZ"),
-            "thinWalled": NodeField(commonName= "clearcoatfloatSided"),
-            "coatAffectRoughness": NodeField(commonName= "coatAffectRoughness"),
-            "sheen": NodeField(commonName= "sheen"),
-            "sheenColor": NodeField(commonName= "sheenColor"),
-            "sheenColorR": NodeField(commonName= "sheenColorR"),
-            "sheenColorG": NodeField(commonName= "sheenColorG"),
-            "sheenColorB": NodeField(commonName= "sheenColorB"),
-            "sheenRoughness": NodeField(commonName= "sheenRoughness"),
-            "thinWalled": NodeField(commonName= "fuzzfloatSided"),
-            "subsurface": NodeField(commonName= "subsurfaceGain"),
-            "subsurfaceColor": NodeField(commonName= "subsurfaceColor"),
-            "subsurfaceColorR": NodeField(commonName= "subsurfaceColorR"),
-            "subsurfaceColorG": NodeField(commonName= "subsurfaceColorG"),
-            "subsurfaceColorB": NodeField(commonName= "subsurfaceColorB"),
-            "subsurfaceScale": NodeField(commonName= "subsurfaceScale"),
-            "subsurfaceRadius": NodeField(commonName= "subsurfaceRadius"),
-            "subsurfaceRadiusR": NodeField(commonName= "subsurfaceRadiusR"),
-            "subsurfaceRadiusG": NodeField(commonName= "subsurfaceRadiusG"),
-            "subsurfaceRadiusB": NodeField(commonName= "subsurfaceRadiusB"),
-            "subsurfaceAnisotropy": NodeField(commonName= "subsurfaceDirectionality"),
-            "thinWalled": NodeField(commonName= "subsurfacefloatSided"),
-            "transmission": NodeField(commonName= "refractionGain"),
-            "transmission": NodeField(commonName= "reflectionGain"),
-            "transmissionColor": NodeField(commonName= "refractionColor"),
-            "transmissionColorR": NodeField(commonName= "refractionColorR"),
-            "transmissionColorG": NodeField(commonName= "refractionColorG"),
-            "transmissionColorB": NodeField(commonName= "refractionColorB"),
-            "transmissionExtraRoughness": NodeField(commonName= "glassRoughness"),
-            "transmissionScatterAnisotropy": NodeField(commonName= "glassAnisotropy"),
-            "tangent": NodeField(commonName= "glassAnisotropyDirection"),
-            "tangentX": NodeField(commonName= "glassAnisotropyDirectionX"),
-            "tangentY": NodeField(commonName= "glassAnisotropyDirectionY"),
-            "tangentZ": NodeField(commonName= "glassAnisotropyDirectionZ"),
-            "thinWalled": NodeField(commonName= "thinGlass"),
-            "transmissionScatter": NodeField(commonName= "ssAlbedo"),
-            "transmissionScatterR": NodeField(commonName= "ssAlbedoR"),
-            "transmissionScatterG": NodeField(commonName= "ssAlbedoG"),
-            "transmissionScatterB": NodeField(commonName= "ssAlbedoB"),
-	    "transmissionScatter": NodeField(commonName= "extinction", func=lambda lst: tuple(map(lambda x: 1 - x, lst[0]))),
-            "transmissionScatterR": NodeField(commonName= "extinctionR", func= lambda x: 1 - x),
-            "transmissionScatterG": NodeField(commonName= "extinctionG", func= lambda x: 1 - x),
-            "transmissionScatterB": NodeField(commonName= "extinctionB", func= lambda x: 1 - x),
-            "emission": NodeField(commonName= "emission"),
-            "emissionColor": NodeField(commonName= "emissionColor"),
-            "emissionColorR": NodeField(commonName= "emissionColorR"),
-            "emissionColorG": NodeField(commonName= "emissionColorG"),
-            "emissionColorB": NodeField(commonName= "emissionColorB"),
-            "normalCamera": NodeField(commonName= "bumpNormal"),
-            "normalCameraX": NodeField(commonName= "bumpNormalX"),
-            "normalCameraY": NodeField(commonName= "bumpNormalY"),
-            "normalCameraZ": NodeField(commonName= "bumpNormalZ"),
-            "opacity": NodeField(commonName= "opacity"),
-            "opacityR": NodeField(commonName= "opacityR"),
-            "opacityG": NodeField(commonName= "opacityG"),
-            "opacityB": NodeField(commonName= "opacityB"),
-            "aiEnableMatte": NodeField(commonName= "userColorEnable"),
-            "aiMatteColor": NodeField(commonName= "userColor"),
-            "aiMatteColorR": NodeField(commonName= "userColorR"),
-            "aiMatteColorG": NodeField(commonName= "userColorG"),
-            "aiMatteColorB": NodeField(commonName= "userColorB"),
-            "aiMatteColorA": NodeField(commonName= "userColorA"),
-            "outColor": NodeField(commonName= "outColor"),
-            "outColorR": NodeField(commonName= "outColorR"),
-            "outColorG": NodeField(commonName= "outColorG"),
-            "outColorB": NodeField(commonName= "outColorB"),
-            "outAlpha": NodeField(commonName= "outAlpha"),
-            "outTransparency": NodeField(commonName= "outTransparency"),
-            "outTransparencyR": NodeField(commonName= "outTransparencyR"),
-            "outTransparencyG": NodeField(commonName= "outTransparencyG"),
-            "outTransparencyB": NodeField(commonName= "outTransparencyB"),
-            "caustics": NodeField(commonName= "caustics"),
-            "opacityR": NodeField(commonName= "opacityR"),
-            "opacityG": NodeField(commonName= "opacityG"),
-            "opacityB": NodeField(commonName= "opacityB"),
-            "transmissionDispersion": NodeField(commonName= "transmissionDispersion"),
-            "transmitAovs": NodeField(commonName= "transmitAovs"),
-            "transmissionDepth": NodeField(commonName= "transmissionDepth"),
-            "thinFilmThickness": NodeField(commonName= "thinFilmThickness"),
-            "thinFilmIOR": NodeField(commonName= "thinFilmIOR"),
-            "internalReflections": NodeField(commonName= "internalReflections"),
-            "exitToBackground": NodeField(commonName= "exitToBackground"),
-            "dielectricPriority": NodeField(commonName= "dielectricPriority"),
-            "indirectDiffuse": NodeField(commonName= "indirectDiffuse"),
-            "indirectSpecular": NodeField(commonName= "indirectSpecular"),
+            "nodeTypeName": [NodeField(commonName= "surfaceShader")],
+            "caching": [NodeField(commonName= "caching")],
+            "frozen": [NodeField(commonName= "frozen")],
+            "isHistoricallyInteresting": [NodeField(commonName= "isHistoricallyInteresting")],
+            "nodeState": [NodeField(commonName= "nodeState")],
+            "base": [NodeField(commonName= "diffuseGain")],
+            "baseColor": [NodeField(commonName= "diffuseColor")],
+            "baseColorR": [NodeField(commonName= "diffuseColorR")],
+            "baseColorG": [NodeField(commonName= "diffuseColorG")],
+            "baseColorB": [NodeField(commonName= "diffuseColorB")],
+            "diffuseRoughness": [NodeField(commonName= "diffuseRoughness")],
+            "thinWalled": [NodeField(commonName= "DoubleSided"), NodeField(commonName= "diffuseBackUseDiffuseColor"), NodeField(commonName= "specularDoubleSided"), NodeField(commonName= "roughSpecularDoubleSided"), NodeField(commonName= "subsurfaceDoubleSided"), NodeField(commonName= "thinGlass"), NodeField(commonName= "clearcoatDoubleSided"), NodeField(commonName= "fuzzDoubleSided")],
+            "specular": [NodeField(commonName= "specularGain")],
+            "specularColor": [NodeField(commonName= "specularEdgeColor"), NodeField(commonName= "roughSpecularEdgeColor")],
+            "specularColorR": [NodeField(commonName= "specularEdgeColorR"), NodeField(commonName= "roughSpecularEdgeColorR")],
+            "specularColorG": [NodeField(commonName= "specularEdgeColorG"), NodeField(commonName= "roughSpecularEdgeColorG")],
+            "specularColorB": [NodeField(commonName= "specularEdgeColorB"), NodeField(commonName= "roughSpecularEdgeColorB")],
+            "specularIOR": [NodeField(commonName= "specularior"), NodeField(commonName= "roughSpecularIor")],
+            "specularRoughness": [NodeField(commonName= "specularRoughness"), NodeField(commonName= "roughSpecularRoughness", func= lambda x: x + 0.1 if 1 > x else x)],
+            "specularAnisotropy": [NodeField(commonName= "specularAnisotropy"), NodeField(commonName= "roughSpecularAnisotropy")],
+            "specularRotation": [NodeField(commonName= "specularAnisotropyDirection"), NodeField(commonName= "roughSpecularAnisotropyDirection")],
+            "tangent": [NodeField(commonName= "glassAnisotropyDirection")],
+            "tangentX": [NodeField(commonName= "specularAnisotropyDirectionX"), NodeField(commonName= "roughSpecularAnisotropyDirectionX"), NodeField(commonName= "clearcoatAnisotropyDirectionX"), NodeField(commonName= "glassAnisotropyDirectionX")],
+            "tangentY": [NodeField(commonName= "specularAnisotropyDirectionY"), NodeField(commonName= "roughSpecularAnisotropyDirectionY"), NodeField(commonName= "clearcoatAnisotropyDirectionY"), NodeField(commonName= "glassAnisotropyDirectionY")],
+            "tangentZ": [NodeField(commonName= "specularAnisotropyDirectionZ"), NodeField(commonName= "roughSpecularAnisotropyDirectionZ"), NodeField(commonName= "clearcoatAnisotropyDirectionZ"), NodeField(commonName= "glassAnisotropyDirectionZ")],
+            "coat": [NodeField(commonName= "coatGain")],
+            "coatColor": [NodeField(commonName= "clearcoatEdgeColor")],
+            "coatColorR": [NodeField(commonName= "clearcoatEdgeColorR")],
+            "coatColorG": [NodeField(commonName= "clearcoatEdgeColorG")],
+            "coatColorB": [NodeField(commonName= "clearcoatEdgeColorB")],
+            "coatIOR": [NodeField(commonName= "clearcoatIor")],
+            "coatAffectColor": [NodeField(commonName= "clearcoatThickness")],
+            "coatRoughness": [NodeField(commonName= "clearcoatRoughness")],
+            "coatAnisotropy": [NodeField(commonName= "clearcoatAnisotropy")],
+            "coatRotation": [NodeField(commonName= "clearcoatAnisotropyDirection")],
+            "coatNormal": [NodeField(commonName= "clearcoatBumpNormal")],
+            "coatNormalX": [NodeField(commonName= "clearcoatBumpNormalX")],
+            "coatNormalY": [NodeField(commonName= "clearcoatBumpNormalY")],
+            "coatNormalZ": [NodeField(commonName= "clearcoatBumpNormalZ")],
+            "coatAffectRoughness": [NodeField(commonName= "coatAffectRoughness")],
+            "sheen": [NodeField(commonName= "sheen")],
+            "sheenColor": [NodeField(commonName= "sheenColor")],
+            "sheenColorR": [NodeField(commonName= "sheenColorR")],
+            "sheenColorG": [NodeField(commonName= "sheenColorG")],
+            "sheenColorB": [NodeField(commonName= "sheenColorB")],
+            "sheenRoughness": [NodeField(commonName= "sheenRoughness")],
+            "subsurface": [NodeField(commonName= "subsurfaceGain")],
+            "subsurfaceColor": [NodeField(commonName= "subsurfaceColor")],
+            "subsurfaceColorR": [NodeField(commonName= "subsurfaceColorR")],
+            "subsurfaceColorG": [NodeField(commonName= "subsurfaceColorG")],
+            "subsurfaceColorB": [NodeField(commonName= "subsurfaceColorB")],
+            "subsurfaceScale": [NodeField(commonName= "subsurfaceScale")],
+            "subsurfaceRadius": [NodeField(commonName= "subsurfaceRadius")],
+            "subsurfaceRadiusR": [NodeField(commonName= "subsurfaceRadiusR")],
+            "subsurfaceRadiusG": [NodeField(commonName= "subsurfaceRadiusG")],
+            "subsurfaceRadiusB": [NodeField(commonName= "subsurfaceRadiusB")],
+            "subsurfaceAnisotropy": [NodeField(commonName= "subsurfaceDirectionality")],
+            "transmission": [NodeField(commonName= "refractionGain"), NodeField(commonName= "reflectionGain")],
+            "transmissionColor": [NodeField(commonName= "refractionColor")],
+            "transmissionColorR": [NodeField(commonName= "refractionColorR")],
+            "transmissionColorG": [NodeField(commonName= "refractionColorG")],
+            "transmissionColorB": [NodeField(commonName= "refractionColorB")],
+            "transmissionExtraRoughness": [NodeField(commonName= "glassRoughness")],
+            "transmissionScatterAnisotropy": [NodeField(commonName= "glassAnisotropy")],
+            "transmissionScatter": [NodeField(commonName= "ssAlbedo"), NodeField(commonName= "extinction", func=lambda lst: tuple(map(lambda x: 1 - x, lst[0])))],
+            "transmissionScatterR": [NodeField(commonName= "ssAlbedoR"), NodeField(commonName= "extinctionR", func= lambda x: 1 - x)],
+            "transmissionScatterG": [NodeField(commonName= "ssAlbedoG"), NodeField(commonName= "extinctionG", func= lambda x: 1 - x)],
+            "transmissionScatterB": [NodeField(commonName= "ssAlbedoB"), NodeField(commonName= "extinctionB", func= lambda x: 1 - x)],
+            "emission": [NodeField(commonName= "emission")],
+            "emissionColor": [NodeField(commonName= "emissionColor")],
+            "emissionColorR": [NodeField(commonName= "emissionColorR")],
+            "emissionColorG": [NodeField(commonName= "emissionColorG")],
+            "emissionColorB": [NodeField(commonName= "emissionColorB")],
+            "normalCamera": [NodeField(commonName= "bumpNormal")],
+            "normalCameraX": [NodeField(commonName= "bumpNormalX")],
+            "normalCameraY": [NodeField(commonName= "bumpNormalY")],
+            "normalCameraZ": [NodeField(commonName= "bumpNormalZ")],
+            "opacity": [NodeField(commonName= "opacity")],
+            "opacityR": [NodeField(commonName= "opacityR")],
+            "opacityG": [NodeField(commonName= "opacityG")],
+            "opacityB": [NodeField(commonName= "opacityB")],
+            "aiEnableMatte": [NodeField(commonName= "userColorEnable")],
+            "aiMatteColor": [NodeField(commonName= "userColor")],
+            "aiMatteColorR": [NodeField(commonName= "userColorR")],
+            "aiMatteColorG": [NodeField(commonName= "userColorG")],
+            "aiMatteColorB": [NodeField(commonName= "userColorB")],
+            "aiMatteColorA": [NodeField(commonName= "userColorA")],
+            "outColor": [NodeField(commonName= "outColor")],
+            "outColorR": [NodeField(commonName= "outColorR")],
+            "outColorG": [NodeField(commonName= "outColorG")],
+            "outColorB": [NodeField(commonName= "outColorB")],
+            "outAlpha": [NodeField(commonName= "outAlpha")],
+            "outTransparency": [NodeField(commonName= "outTransparency")],
+            "outTransparencyR": [NodeField(commonName= "outTransparencyR")],
+            "outTransparencyG": [NodeField(commonName= "outTransparencyG")],
+            "outTransparencyB": [NodeField(commonName= "outTransparencyB")],
+            "caustics": [NodeField(commonName= "caustics")],
+            "transmissionDispersion": [NodeField(commonName= "transmissionDispersion")],
+            "transmitAovs": [NodeField(commonName= "transmitAovs")],
+            "transmissionDepth": [NodeField(commonName= "transmissionDepth")],
+            "thinFilmThickness": [NodeField(commonName= "thinFilmThickness")],
+            "thinFilmIOR": [NodeField(commonName= "thinFilmIOR")],
+            "internalReflections": [NodeField(commonName= "internalReflections")],
+            "exitToBackground": [NodeField(commonName= "exitToBackground")],
+            "dielectricPriority": [NodeField(commonName= "dielectricPriority")],
+            "indirectDiffuse": [NodeField(commonName= "indirectDiffuse")],
+            "indirectSpecular": [NodeField(commonName= "indirectSpecular")],
         },
         "file": {
-            "nodeTypeName": NodeField(commonName= "textureFileNode"),
-            "caching": NodeField(commonName= "caching"),
-            "frozen": NodeField(commonName= "frozen"),
-            "isHistoricallyInteresting": NodeField(commonName= "isHistoricallyInteresting"),
-            "nodeState": NodeField(commonName= "nodeState"),
+            "nodeTypeName": [NodeField(commonName= "textureFileNode")],
+            "caching": [NodeField(commonName= "caching")],
+            "frozen": [NodeField(commonName= "frozen")],
+            "isHistoricallyInteresting": [NodeField(commonName= "isHistoricallyInteresting")],
+            "nodeState": [NodeField(commonName= "nodeState")],
             #"binMembership": "binMembership",
-            "fileTextureName": NodeField(commonName= "filename"),
+            "fileTextureName": [NodeField(commonName= "filename")],
         },
     },
 
@@ -248,7 +216,7 @@ ENGINECONVERSIONS ={
             "diffuseBumpNormalX": "diffuseBumpNormalX",
             "diffuseBumpNormalY": "diffuseBumpNormalY",
             "diffuseBumpNormalZ": "diffuseBumpNormalZ",
-            "floatSided": "diffusefloatSided",
+            "doubleSided": "diffuseDoubleSided",
             "diffuseBackUseDiffuseColor": "diffuseBackUseDiffuseColor",
             "diffuseBackColor": "diffuseBackColor",
             "diffuseBackColorR": "diffuseBackColorR",
@@ -288,7 +256,7 @@ ENGINECONVERSIONS ={
             "specularBumpNormalX": "specularBumpNormalX",
             "specularBumpNormalY": "specularBumpNormalY",
             "specularBumpNormalZ": "specularBumpNormalZ",
-            "specularfloatSided": "specularfloatSided",
+            "specularDoubleSided": "specularDoubleSided",
             "roughSpecularFresnelMode": "roughSpecularFresnelMode",
             "roughSpecularFaceColor": "roughSpecularFaceColor",
             "roughSpecularFaceColorR": "roughSpecularFaceColorR",
@@ -318,7 +286,7 @@ ENGINECONVERSIONS ={
             "roughSpecularBumpNormalX": "roughSpecularBumpNormalX",
             "roughSpecularBumpNormalY": "roughSpecularBumpNormalY",
             "roughSpecularBumpNormalZ": "roughSpecularBumpNormalZ",
-            "roughSpecularfloatSided": "roughSpecularfloatSided",
+            "roughSpecularDoubleSided": "roughSpecularDoubleSided",
             "clearcoatFresnelMode": "clearcoatFresnelMode",
             "clearcoatFaceColor": "clearcoatFaceColor",
             "clearcoatFaceColorR": "clearcoatFaceColorR",
@@ -353,7 +321,7 @@ ENGINECONVERSIONS ={
             "clearcoatBumpNormalX": "clearcoatBumpNormalX",
             "clearcoatBumpNormalY": "clearcoatBumpNormalY",
             "clearcoatBumpNormalZ": "clearcoatBumpNormalZ",
-            "clearcoatfloatSided": "clearcoatfloatSided",
+            "clearcoatDoubleSided": "clearcoatDoubleSided",
             "specularEnergyCompensation": "specularEnergyCompensation",
             "clearcoatEnergyCompensation": "clearcoatEnergyCompensation",
             "iridescenceFaceGain": "iridescenceFaceGain",
@@ -382,7 +350,7 @@ ENGINECONVERSIONS ={
             "iridescenceScale": "iridescenceScale",
             "iridescenceFlip": "iridescenceFlip",
             "iridescenceThickness": "iridescenceThickness",
-            "iridescencefloatSided": "iridescencefloatSided",
+            "iridescenceDoubleSided": "iridescenceDoubleSided",
             "sheen": "fuzzGain",
             "sheenColor": "fuzzColor",
             "sheenColorR": "fuzzColorR",
@@ -393,7 +361,7 @@ ENGINECONVERSIONS ={
             "fuzzBumpNormalX": "fuzzBumpNormalX",
             "fuzzBumpNormalY": "fuzzBumpNormalY",
             "fuzzBumpNormalZ": "fuzzBumpNormalZ",
-            "fuzzfloatSided": "fuzzfloatSided",
+            "fuzzDoubleSided": "fuzzDoubleSided",
             "subsurfaceType": "subsurfaceType",
             "subsurfaceGain": "subsurfaceGain",
             "subsurfaceColor": "subsurfaceColor",
@@ -427,7 +395,7 @@ ENGINECONVERSIONS ={
             "subsurfacePostTintG": "subsurfacePostTintG",
             "subsurfacePostTintB": "subsurfacePostTintB",
             "subsurfaceDiffuseSwitch": "subsurfaceDiffuseSwitch",
-            "subsurfacefloatSided": "subsurfacefloatSided",
+            "subsurfaceDoubleSided": "subsurfaceDoubleSided",
             "subsurfaceTransmitGain": "subsurfaceTransmitGain",
             "considerBackside": "considerBackside",
             "continuationRayMode": "continuationRayMode",
@@ -452,7 +420,7 @@ ENGINECONVERSIONS ={
             "singlescatterDirectGainTintR": "singlescatterDirectGainTintR",
             "singlescatterDirectGainTintG": "singlescatterDirectGainTintG",
             "singlescatterDirectGainTintB": "singlescatterDirectGainTintB",
-            "singlescatterfloatSided": "singlescatterfloatSided",
+            "singlescatterDoubleSided": "singlescatterDoubleSided",
             "singlescatterConsiderBackside": "singlescatterConsiderBackside",
             "singlescatterContinuationRayMode": "singlescatterContinuationRayMode",
             "singlescatterMaxContinuationHits": "singlescatterMaxContinuationHits",
@@ -669,7 +637,7 @@ def crawlNodeTree(sNodes: list[Node]):
     # }}}
 
 
-    for i in range(0, 3): #debugline
+    #for i in range(0, 3): #debugline
         print("/////////////////////////////////////////") #debugline
 
     nodes: list[Node] = sNodes
@@ -699,54 +667,56 @@ def convertNode(node: Node, fromEngine: str, toEngine: str):
     nodeInfo: dict = {}
     # ^ Key: Node field's name
     # ^ Value: node field's value
-    nodeInfo["nodeTypeName"] = conversionFromDict[node.nType]["nodeTypeName"].commonName
+    nodeInfo["nodeTypeName"] = conversionFromDict[node.nType]["nodeTypeName"][0].commonName
 
     for k, v in list(conversionFromDict[node.nType].items())[1:]: # Iterate through the dict but skip the first item in it (in this case the key "nodeTypeName")
-        if callable(v.func):
-            print(f"!!! {k} -key is CALLABLE !!!")
-            print("Its type is:")
-            print(cmd.getAttr(f"{node.name}.{k}",typ = True))
-            print("its value is:")
-            try:
-                print(cmd.getAttr(f"{node.name}.{k}")[0])
-                print("That python percieves as:")
-                print(type(cmd.getAttr(f"{node.name}.{k}")[0]))
-            except:
-                print(cmd.getAttr(f"{node.name}.{k}"))
-                print("That python percieves as:")
-                print(type(cmd.getAttr(f"{node.name}.{k}")))
-            nodeInfo[f"{conversionFromDict[node.nType][k].commonName}"] = v.func(cmd.getAttr(f"{node.name}.{k}"))
-        else:
-
-            currentAttribute = cmd.getAttr(f"{node.name}.{k}")
-            if isinstance(currentAttribute, list):
-                print(f"?????????????????????????????????????????????????????????????????????????????????????????????????????????????\nConverting ::{k}:: to tuple") #debugline
-                print(f"Before con: {currentAttribute}")
-                nodeInfo[f"{conversionFromDict[node.nType][k].commonName}"] = currentAttribute[0]
-                print(f'After con: {nodeInfo[f"{conversionFromDict[node.nType][k].commonName}"]}')
+        for item in v:
+            if callable(item.func):
+                print(f"!!! {k} -key is CALLABLE !!!") #debugline
+                print("Its type is:") #debugline
+                print(cmd.getAttr(f"{node.name}.{k}",typ = True)) #debugline
+                print("its value is:") #debugline
+                try: #debugline
+                    print(cmd.getAttr(f"{node.name}.{k}")[0]) #debugline
+                    print("That python percieves as:") #debugline
+                    print(type(cmd.getAttr(f"{node.name}.{k}")[0])) #debugline
+                except: #debugline
+                    print(cmd.getAttr(f"{node.name}.{k}")) #debugline
+                    print("That python percieves as:") #debugline
+                    print(type(cmd.getAttr(f"{node.name}.{k}"))) #debugline
+                nodeInfo[f"{item.commonName}"] = item.func(cmd.getAttr(f"{node.name}.{k}"))
             else:
-                print(f'::{k}:: is DEFINITELY NOT A LIST, NU-UH, NO WAY. NADA!\nSee?: {currentAttribute}')
-                nodeInfo[f"{conversionFromDict[node.nType][k].commonName}"] = currentAttribute
-#            nodeInfo[f"{conversionFromDict[node.nType][k].commonName}"] = currentAttribute
 
-        nodeInfo[f"{conversionFromDict[node.nType][k].commonName}-type"] = cmd.getAttr(f"{node.name}.{k}",typ = True)
-	# ^ set the value and type attributes for the node that's been passed in the function call; to the common node and fields names based on the madeup specification
+                currentAttribute = cmd.getAttr(f"{node.name}.{k}")
+                if isinstance(currentAttribute, list):
+                    #print(f"?????????????????????????????????????????????????????????????????????????????????????????????????????????????\nConverting ::{k}:: to tuple") #debugline #debugline
+                    #print(f"Before con: {currentAttribute}") #debugline
+                    nodeInfo[f"{item.commonName}"] = currentAttribute[0]
+                    #print(f'After con: {nodeInfo[f"{item.commonName}"]}') #debugline
+                else:
+                    #print(f'::{k}:: is DEFINITELY NOT A LIST, NU-UH, NO WAY. NADA!\nSee?: {currentAttribute}') #debugline
+                    nodeInfo[f"{item.commonName}"] = currentAttribute
+    #            nodeInfo[f"{conversionFromDict[node.nType][k].commonName}"] = currentAttribute
+
+            nodeInfo[f"{item.commonName}-type"] = cmd.getAttr(f"{node.name}.{k}",typ = True)
+            # ^ set the value and type attributes for the node that's been passed in the function call; to the common node and fields names based on the madeup specification
 
     print("######################################") #debugline
     print(nodeInfo) #debugline
     # }}}
 
-    # {{{ TODO: convert common type to toEngine's types
+    # {{{ DONE: convert common type to toEngine's types
     #           & spawn toEngine node with converted attributes
     conversionToDict = ENGINECONVERSIONS[TOENGINES[toEngine]]
     intersectionDict: list = []
     for deepValue in conversionFromDict[node.nType].values():
-        #print(f"deepValue: {deepValue.commonName}") #debugLine
-        #print(f"keys: {conversionToDict[nodeInfo['nodeTypeName']]}") #debugLine
-        if deepValue.commonName in conversionToDict[nodeInfo["nodeTypeName"]]: # get only the fromEngine fields that have an equivalent in toEngine fields
-            intersectionDict.append(deepValue.commonName)
+        for item in deepValue:
+            #print(f"deepValue: {deepValue.commonName}") #debugLine
+            #print(f"keys: {conversionToDict[nodeInfo['nodeTypeName']]}") #debugLine
+            if item.commonName in conversionToDict[nodeInfo["nodeTypeName"]]: # get only the fromEngine fields that have an equivalent in toEngine fields
+                intersectionDict.append(item.commonName)
 
-    print(f"!!! INTERSECTION !!! {intersectionDict}") #debugline
+    #print(f"!!! INTERSECTION !!! {intersectionDict}") #debugline
 
     newNode = cmd.shadingNode(conversionToDict[nodeInfo["nodeTypeName"]]["nodeTypeName"], asShader= True) # creating new node in hypershade
 
@@ -754,14 +724,14 @@ def convertNode(node: Node, fromEngine: str, toEngine: str):
         nodeFieldData = None
 
         nodeFieldData = nodeInfo[x]
-        oldNodeFieldDataType = nodeInfo[f'{x}-type'] #debugLine
+        oldNodeFieldDataType = nodeInfo[f'{x}-type']
         nodeFieldDataType = cmd.getAttr(f"{newNode}.{conversionToDict[nodeInfo['nodeTypeName']][f'{x}']}",typ = True)
 
 
-        print(f'\n$$$\nField: {conversionToDict[nodeInfo["nodeTypeName"]][f"{x}"]}')
-        print(nodeInfo[x])
-        print("That python percieves as:")
-        print(type(nodeInfo[x]))
+        print(f'\n$$$\nField: {conversionToDict[nodeInfo["nodeTypeName"]][f"{x}"]}') #debugline
+        print(nodeInfo[x]) #debugline
+        print("That python percieves as:") #debugline
+        print(type(nodeInfo[x])) #debugline
         print(f"old Node Data type: {oldNodeFieldDataType}") #debugline
         print(f"NEW Node Data type: {nodeFieldDataType}") #debugline
 
