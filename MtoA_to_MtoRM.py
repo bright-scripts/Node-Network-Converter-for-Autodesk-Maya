@@ -690,7 +690,7 @@ def convertNode(node: Node, fromEngine: str, toEngine: str):
     '''
 
     # {{{ DONE: get and store existing attributes in the "common" types
-    conversionDict = ENGINECONVERSIONS[FROMENGINES[fromEngine]] # This returns a dict that contains subdictionaries of shader node information.
+    conversionFromDict = ENGINECONVERSIONS[FROMENGINES[fromEngine]] # This returns a dict that contains subdictionaries of shader node information.
     # ^ Key: nodeType (in fromEngine)
     # ^ Value: dict of nodeType's fields NodeField objects
     #			    ^ Key: node field's name in fromEngines format
@@ -699,9 +699,9 @@ def convertNode(node: Node, fromEngine: str, toEngine: str):
     nodeInfo: dict = {}
     # ^ Key: Node field's name
     # ^ Value: node field's value
-    nodeInfo["nodeTypeName"] = conversionDict[node.nType]["nodeTypeName"].commonName
+    nodeInfo["nodeTypeName"] = conversionFromDict[node.nType]["nodeTypeName"].commonName
 
-    for k, v in list(conversionDict[node.nType].items())[1:]: # Iterate through the dict but skip the first item in it (in this case the key "nodeTypeName")
+    for k, v in list(conversionFromDict[node.nType].items())[1:]: # Iterate through the dict but skip the first item in it (in this case the key "nodeTypeName")
         if callable(v.func):
             print(f"!!! {k} -key is CALLABLE !!!")
             print("Its type is:")
@@ -715,11 +715,21 @@ def convertNode(node: Node, fromEngine: str, toEngine: str):
                 print(cmd.getAttr(f"{node.name}.{k}"))
                 print("That python percieves as:")
                 print(type(cmd.getAttr(f"{node.name}.{k}")))
-            nodeInfo[f"{conversionDict[node.nType][k].commonName}"] = v.func(cmd.getAttr(f"{node.name}.{k}"))
+            nodeInfo[f"{conversionFromDict[node.nType][k].commonName}"] = v.func(cmd.getAttr(f"{node.name}.{k}"))
         else:
-            nodeInfo[f"{conversionDict[node.nType][k].commonName}"] = cmd.getAttr(f"{node.name}.{k}")
 
-        nodeInfo[f"{conversionDict[node.nType][k].commonName}-type"] = cmd.getAttr(f"{node.name}.{k}",typ = True)
+            currentAttribute = cmd.getAttr(f"{node.name}.{k}")
+            if isinstance(currentAttribute, list):
+                print(f"?????????????????????????????????????????????????????????????????????????????????????????????????????????????\nConverting ::{k}:: to tuple") #debugline
+                print(f"Before con: {currentAttribute}")
+                nodeInfo[f"{conversionFromDict[node.nType][k].commonName}"] = currentAttribute[0]
+                print(f'After con: {nodeInfo[f"{conversionFromDict[node.nType][k].commonName}"]}')
+            else:
+                print(f'::{k}:: is DEFINITELY NOT A LIST, NU-UH, NO WAY. NADA!\nSee?: {currentAttribute}')
+                nodeInfo[f"{conversionFromDict[node.nType][k].commonName}"] = currentAttribute
+#            nodeInfo[f"{conversionFromDict[node.nType][k].commonName}"] = currentAttribute
+
+        nodeInfo[f"{conversionFromDict[node.nType][k].commonName}-type"] = cmd.getAttr(f"{node.name}.{k}",typ = True)
 	# ^ set the value and type attributes for the node that's been passed in the function call; to the common node and fields names based on the madeup specification
 
     print("######################################") #debugline
@@ -728,34 +738,57 @@ def convertNode(node: Node, fromEngine: str, toEngine: str):
 
     # {{{ TODO: convert common type to toEngine's types
     #           & spawn toEngine node with converted attributes
-    conversionDict = ENGINECONVERSIONS[TOENGINES[toEngine]]
+    conversionToDict = ENGINECONVERSIONS[TOENGINES[toEngine]]
+    intersectionDict: list = []
+    for deepValue in conversionFromDict[node.nType].values():
+        #print(f"deepValue: {deepValue.commonName}") #debugLine
+        #print(f"keys: {conversionToDict[nodeInfo['nodeTypeName']]}") #debugLine
+        if deepValue.commonName in conversionToDict[nodeInfo["nodeTypeName"]]: # get only the fromEngine fields that have an equivalent in toEngine fields
+            intersectionDict.append(deepValue.commonName)
 
-    newNode = cmd.shadingNode(conversionDict[nodeInfo["nodeTypeName"]]["nodeTypeName"], asShader= True) # creating new node in hypershade
+    print(f"!!! INTERSECTION !!! {intersectionDict}") #debugline
 
-    for k, v in list(conversionDict[nodeInfo["nodeTypeName"]].items())[1:]: # Iterate through the dict but skip the first item in it (in this case the key "nodeTypeName")
+    newNode = cmd.shadingNode(conversionToDict[nodeInfo["nodeTypeName"]]["nodeTypeName"], asShader= True) # creating new node in hypershade
+
+    for x in intersectionDict: # Iterate through the dict and assign attributes to the new node
         nodeFieldData = None
 
-        try:
-            print(f"Field: {k}")
-            print(nodeInfo[conversionDict[nodeInfo["nodeTypeName"]][f"{k}"]])
-            print("That python percieves as:")
-            print(type(nodeInfo[conversionDict[nodeInfo["nodeTypeName"]][f"{k}"]]))
-        except:
-            pass
+        nodeFieldData = nodeInfo[x]
+        oldNodeFieldDataType = nodeInfo[f'{x}-type'] #debugLine
+        nodeFieldDataType = cmd.getAttr(f"{newNode}.{conversionToDict[nodeInfo['nodeTypeName']][f'{x}']}",typ = True)
 
-        try:
-            nodeFieldData = nodeInfo[conversionDict[nodeInfo["nodeTypeName"]][f"{k}"]]
-            nodeFieldDataType = nodeInfo[f'{conversionDict[nodeInfo["nodeTypeName"]][f"{k}"]}-type']
-        except:
-            pass
+
+        print(f'\n$$$\nField: {conversionToDict[nodeInfo["nodeTypeName"]][f"{x}"]}')
+        print(nodeInfo[x])
+        print("That python percieves as:")
+        print(type(nodeInfo[x]))
+        print(f"old Node Data type: {oldNodeFieldDataType}") #debugline
+        print(f"NEW Node Data type: {nodeFieldDataType}") #debugline
+
 
         if nodeFieldData != None and nodeFieldData != None:
             try: # This block is a solution for the fact that some node fields need a type as well a value to be assignable, but not every field accepts a type.
-                    cmd.setAttr(f"{newNode}.{k}", nodeFieldData) # setting attributes of the spawend node
+                    cmd.setAttr(f"{newNode}.{x}", nodeFieldData) # setting attributes of the spawend node
             except:
-                    cmd.setAttr(f"{newNode}.{k}", nodeFieldData, typ= f"{nodeFieldDataType}") # setting attributes of the spawend node and also specifying a type
+                    if nodeFieldDataType == "float3": # Maya has it's own type for vectors and such so if we need them, we have to convert the tuple containing it into Maya's type first... (in this case we have to pass float3 not as a list/tuple but individual values. Weird flex, but ok..)
+                        try: # This try except block is here because during conversion there might be instances when fromEngine only has a float value but toEngine needs a float3 value instead. First we try assigning the float3 to float3 but if it doesn't work we assign the float to all elements of float3
+                            cmd.setAttr(f"{newNode}.{conversionToDict[nodeInfo['nodeTypeName']][f'{x}']}", nodeFieldData[0], nodeFieldData[1], nodeFieldData[2], typ= f"{nodeFieldDataType}") # setting attributes of the spawend node and also specifying a type
+                        except:
+                            cmd.setAttr(f"{newNode}.{conversionToDict[nodeInfo['nodeTypeName']][f'{x}']}", nodeFieldData, nodeFieldData, nodeFieldData, typ= f"{nodeFieldDataType}") 
+                    elif nodeFieldDataType == "float":
+
+                        if oldNodeFieldDataType == "float3": # if 
+                            cmd.setAttr(f"{newNode}.{conversionToDict[nodeInfo['nodeTypeName']][f'{x}']}", nodeFieldData[0])
+                        elif nodeFieldData < 0:
+                            cmd.setAttr(f"{newNode}.{conversionToDict[nodeInfo['nodeTypeName']][f'{x}']}", (nodeFieldData*-1))
+                        else:
+                            cmd.setAttr(f"{newNode}.{conversionToDict[nodeInfo['nodeTypeName']][f'{x}']}", nodeFieldData)
+
+                    else:
+                        cmd.setAttr(f"{newNode}.{conversionToDict[nodeInfo['nodeTypeName']][f'{x}']}", nodeFieldData, typ= f"{nodeFieldDataType}") # setting attributes of the spawend node and also specifying a type
+
 	    # ^ using the previously saved node field information create a new node and assign values from the original node fields to new node; using the common -> toEngine translated dictionary as a reference
-            print(f'SET {newNode}.{k} TO {nodeInfo[conversionDict[nodeInfo["nodeTypeName"]][f"{k}"]]}') #debugline
+            print(f'SET {nodeInfo[x]} TO {newNode}.{conversionToDict[nodeInfo["nodeTypeName"]][f"{x}"]}') #debugline
     # }}}
 
 
