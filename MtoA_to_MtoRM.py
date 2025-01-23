@@ -643,10 +643,12 @@ def crawlNodeTree(sNodes: list[Node]):
     nodes: list[Node] = sNodes
     for i in range(0, len(sNodes)):
         if sNodes[i] != None:
-            for x in sNodes[i].inCon:
-                mapInConnections(x, nodes)
-            for x in sNodes[i].outCon:
-                mapOutConnections(x, nodes)
+            if sNodes[i].inCon != None:
+                for x in sNodes[i].inCon:
+                    mapInConnections(x, nodes)
+            if sNodes[i].outCon != None:
+                for x in sNodes[i].outCon:
+                    mapOutConnections(x, nodes)
 
 
     return nodes
