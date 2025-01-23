@@ -5,12 +5,13 @@ import maya.cmds as cmd
 ### {{{ class definitions
 
 class Node:
-    def __init__(self, name, nType, inCon = None, outCon = None, selected = False):
+    def __init__(self, name: str, nType: str, inCon: list[list[str]] | None = None, outCon: list[list[str]] | None = None, selected: bool = False, convertedName: str | None = None):
         self.name: str = name
         self.nType: str = nType
         self.selected: bool = selected
-        self.inCon: list[str] | None = inCon
-        self.outCon: list[str] | None = outCon
+        self.inCon: list[list[str]] | None = inCon
+        self.outCon: list[list[str]] | None = outCon
+        self.convertedName: str | None = convertedName
 
     def __str__(self) -> str:
         inConStr: str = ""
@@ -28,18 +29,17 @@ class Node:
         else:
             outConStr = "- None\n"
 
-
-        r = f"Name: {self.name}\nType: {self.nType}\nSelected: {self.selected}\nInCon:\n{inConStr}OutCon:\n{outConStr}-----\n"
+        r = f"Name: {self.name}\nType: {self.nType}\nSelected: {self.selected}\nInCon:\n{inConStr}OutCon:\n{outConStr}Converted name: {self.convertedName}\n-----\n"
 
         return r
 
 class NodeField:
-    def __init__( self, commonName: str | None = None, engineSpecName: str | None= None, func = None, fieldValue = None, fieldType = None):
+    def __init__( self, commonName: str | None = None, func = None):
         self.commonName: str | None= commonName
-        self.engineSpecName: str | None= engineSpecName
+        #self.engineSpecName: str | None= engineSpecName
         self.func = func
-        self.fieldValue = fieldValue
-        self.fieldType = fieldType
+        #self.fieldValue = fieldValue
+        #self.fieldType = fieldType
 
 
 
@@ -184,6 +184,10 @@ ENGINECONVERSIONS ={
             "nodeState": [NodeField(commonName= "nodeState")],
             #"binMembership": "binMembership",
             "fileTextureName": [NodeField(commonName= "filename")],
+            "outColor": [NodeField(commonName= "outColor")],
+            "outColorR": [NodeField(commonName= "outColorR")],
+            "outColorG": [NodeField(commonName= "outColorG")],
+            "outColorB": [NodeField(commonName= "outColorB")],
         },
     },
 
@@ -196,7 +200,11 @@ ENGINECONVERSIONS ={
             "isHistoricallyInteresting": "isHistoricallyInteresting",
             "nodeState": "nodeState",
             #"binMembership": "binMembership",
-            "filename": "filename"
+            "filename": "filename",
+            "outColor": "resultRGB",
+            "outColorR": "resultR",
+            "outColorG": "resultG",
+            "outColorB": "resultB",
         },
 	"surfaceShader": {
             "nodeTypeName": "PxrSurface",
@@ -550,13 +558,13 @@ def populateInConnectionsData(node: Node) -> Node:
     Duh, I know. ...
     '''
 
-    incomingConnections: list[str] = []
+    incomingConnections: list[list[str]] = []
 
-    inConTemp = cmd.listConnections(node.name, s = True, d = False, fnn = True, plugs = True)
+    inConTemp = cmd.listConnections(node.name, c = True, s = True, d = False, fnn = True, plugs = True)
     if inConTemp != None:
-        for y in inConTemp:
-            if cmd.nodeType(y) not in STOPCRAWLINGTYPES:
-                incomingConnections.append(y)
+        for i in range(0, len(inConTemp), 2):
+            if cmd.nodeType(inConTemp[i+1]) not in STOPCRAWLINGTYPES:
+                incomingConnections.append([inConTemp[i], inConTemp[i+1]]) #every first inConTemp value will always be the current node and every second it's connection
 
         if len(incomingConnections) != 0:
             node.inCon = incomingConnections
@@ -570,13 +578,17 @@ def populateOutConnectionsData(node: Node) -> Node:
     Duh, I know. ...
     '''
 
-    outgoingConnections: list[str] = []
+    outgoingConnections: list[list[str]] = []
 
-    outConTemp = cmd.listConnections(node.name, s = False, d = True, fnn = True, plugs = True)
+    outConTemp = cmd.listConnections(node.name, c = True, s = False, d = True, fnn = True, plugs = True)
+
+    print(f"$$$$$$$$$$$$$$$$$$$$$$$$$\noutgoing connections on {node.name}: {outgoingConnections}")
+
     if outConTemp != None:
-        for y in outConTemp:
-            if cmd.nodeType(y) not in STOPCRAWLINGTYPES:
-                outgoingConnections.append(y)
+        for i in range(0, len(outConTemp), 2):
+            print(f"{outConTemp[i+1]}'s type is: {cmd.nodeType(outConTemp[i+1])}") #debugline
+            if cmd.nodeType(outConTemp[i+1]) not in STOPCRAWLINGTYPES:
+                outgoingConnections.append([outConTemp[i], outConTemp[i+1]]) #every first outConTemp value will always be the current node and every second it's connection
 
         if len(outgoingConnections) != 0:
             node.outCon = outgoingConnections
@@ -584,18 +596,17 @@ def populateOutConnectionsData(node: Node) -> Node:
     return node
 
 
-def mapInConnections(nodeConnection: str, nodes: list[Node]) -> list[Node]:
+def mapInConnections(nodeConnection: list[str], nodes: list[Node]) -> list[Node]:
     '''
     Returns the given list[Node] extended with all the nodes (incoming) connected to nodeConnection.
     '''
 
-    nodeName = nodeConnection.split(".")[0]
+    nodeName = nodeConnection[1].split(".")[0]
     node = Node(name= nodeName, nType= cmd.nodeType(nodeName))
     node = populateInConnectionsData(node)
     nodes.append(node)
-    print(node) #debugline
-
     #print(node) #debugline
+
 
     if node.inCon != None:
         for x in node.inCon:
@@ -603,18 +614,17 @@ def mapInConnections(nodeConnection: str, nodes: list[Node]) -> list[Node]:
 
     return nodes
 
-def mapOutConnections(nodeConnection: str, nodes: list[Node]) -> list[Node]:
+def mapOutConnections(nodeConnection: list[str], nodes: list[Node]) -> list[Node]:
     '''
     Returns the given list[Node] extended with all the nodes (outgoing) connected to nodeConnection.
     '''
 
-    nodeName = nodeConnection.split(".")[0]
+    nodeName = nodeConnection[1].split(".")[0]
     node = Node(name= nodeName, nType= cmd.nodeType(nodeName))
     node = populateOutConnectionsData(node)
     nodes.append(node)
-    print(node) #debugline
-
     #print(node) #debugline
+
 
     if node.outCon != None:
         for x in node.outCon:
@@ -654,9 +664,10 @@ def crawlNodeTree(sNodes: list[Node]):
     return nodes
 
 
-def convertNode(node: Node, fromEngine: str, toEngine: str):
+def convertNode(node: Node, fromEngine: str, toEngine: str) -> str:
     '''
     Convert the given node from the provided fromEngine engine's own system to the toEngine's equivalent node
+    Returns the name of the newly created node.
     '''
 
     # {{{ DONE: get and store existing attributes in the "common" types
@@ -674,18 +685,18 @@ def convertNode(node: Node, fromEngine: str, toEngine: str):
     for k, v in list(conversionFromDict[node.nType].items())[1:]: # Iterate through the dict but skip the first item in it (in this case the key "nodeTypeName")
         for item in v:
             if callable(item.func):
-                print(f"!!! {k} -key is CALLABLE !!!") #debugline
-                print("Its type is:") #debugline
-                print(cmd.getAttr(f"{node.name}.{k}",typ = True)) #debugline
-                print("its value is:") #debugline
-                try: #debugline
-                    print(cmd.getAttr(f"{node.name}.{k}")[0]) #debugline
-                    print("That python percieves as:") #debugline
-                    print(type(cmd.getAttr(f"{node.name}.{k}")[0])) #debugline
-                except: #debugline
-                    print(cmd.getAttr(f"{node.name}.{k}")) #debugline
-                    print("That python percieves as:") #debugline
-                    print(type(cmd.getAttr(f"{node.name}.{k}"))) #debugline
+                #print(f"!!! {k} -key is CALLABLE !!!") #debugline
+                #print("Its type is:") #debugline
+                #print(cmd.getAttr(f"{node.name}.{k}",typ = True)) #debugline
+                #print("its value is:") #debugline
+                #try: #debugline
+                #    print(cmd.getAttr(f"{node.name}.{k}")[0]) #debugline
+                #    print("That python percieves as:") #debugline
+                #    print(type(cmd.getAttr(f"{node.name}.{k}")[0])) #debugline
+                #except: #debugline
+                #    print(cmd.getAttr(f"{node.name}.{k}")) #debugline
+                #    print("That python percieves as:") #debugline
+                #    print(type(cmd.getAttr(f"{node.name}.{k}"))) #debugline
                 nodeInfo[f"{item.commonName}"] = item.func(cmd.getAttr(f"{node.name}.{k}"))
             else:
 
@@ -720,7 +731,7 @@ def convertNode(node: Node, fromEngine: str, toEngine: str):
 
     #print(f"!!! INTERSECTION !!! {intersectionDict}") #debugline
 
-    newNode = cmd.shadingNode(conversionToDict[nodeInfo["nodeTypeName"]]["nodeTypeName"], asShader= True) # creating new node in hypershade
+    newNode: str = cmd.shadingNode(conversionToDict[nodeInfo["nodeTypeName"]]["nodeTypeName"], asShader= True) # creating new node in hypershade
 
     for x in intersectionDict: # Iterate through the dict and assign attributes to the new node
         nodeFieldData = None
@@ -730,12 +741,12 @@ def convertNode(node: Node, fromEngine: str, toEngine: str):
         nodeFieldDataType = cmd.getAttr(f"{newNode}.{conversionToDict[nodeInfo['nodeTypeName']][f'{x}']}",typ = True)
 
 
-        print(f'\n$$$\nField: {conversionToDict[nodeInfo["nodeTypeName"]][f"{x}"]}') #debugline
-        print(nodeInfo[x]) #debugline
-        print("That python percieves as:") #debugline
-        print(type(nodeInfo[x])) #debugline
-        print(f"old Node Data type: {oldNodeFieldDataType}") #debugline
-        print(f"NEW Node Data type: {nodeFieldDataType}") #debugline
+        #print(f'\n$$$\nField: {conversionToDict[nodeInfo["nodeTypeName"]][f"{x}"]}') #debugline
+        #print(nodeInfo[x]) #debugline
+        #print("That python percieves as:") #debugline
+        #print(type(nodeInfo[x])) #debugline
+        #print(f"old Node Data type: {oldNodeFieldDataType}") #debugline
+        #print(f"NEW Node Data type: {nodeFieldDataType}") #debugline
 
 
         if nodeFieldData != None and nodeFieldData != None:
@@ -760,19 +771,85 @@ def convertNode(node: Node, fromEngine: str, toEngine: str):
                         cmd.setAttr(f"{newNode}.{conversionToDict[nodeInfo['nodeTypeName']][f'{x}']}", nodeFieldData, typ= f"{nodeFieldDataType}") # setting attributes of the spawend node and also specifying a type
 
 	    # ^ using the previously saved node field information create a new node and assign values from the original node fields to new node; using the common -> toEngine translated dictionary as a reference
-            print(f'SET {nodeInfo[x]} TO {newNode}.{conversionToDict[nodeInfo["nodeTypeName"]][f"{x}"]}') #debugline
+            #print(f'SET {nodeInfo[x]} TO {newNode}.{conversionToDict[nodeInfo["nodeTypeName"]][f"{x}"]}') #debugline
     # }}}
 
+
+    return newNode
+
+def getDictIntersection(nodes: list[Node], currentNode: Node, fromEngine: str, toEngine: str):
+    conversionFromDict = ENGINECONVERSIONS[FROMENGINES[fromEngine]] # This returns a dict that contains subdictionaries of shader node information.
+    conversionToDict = ENGINECONVERSIONS[TOENGINES[toEngine]]
+
+    intersectionDict: list = []
+    intersectionDictToEngine: dict = {}
+    #print(f"CURRENT NODE TYPE: {currentNode.nType}") #debugline
+    for deepValue in conversionFromDict[currentNode.nType].values():
+        for item in deepValue:
+            if item.commonName in conversionToDict[conversionFromDict[currentNode.nType]["nodeTypeName"][0].commonName]: # get only the fromEngine fields that have an equivalent in toEngine fields
+                intersectionDict.append(item.commonName)
+                #print(item.commonName) #debugline
+
+    # {{{converting intersectionDict to toEngine field names from common into conversionDictToEngine
+    for i in range(0, len(intersectionDict)):
+        intersectionDictToEngine[intersectionDict[i]] = conversionToDict[conversionFromDict[currentNode.nType]["nodeTypeName"][0].commonName][intersectionDict[i]]
+        #print(f'+++ {intersectionDictToEngine}') #debugline
+    # }}}
+    return intersectionDict, intersectionDictToEngine
+
+
+def connectNode(nodes: list[Node], currentNode: Node, fromEngine: str, toEngine: str):
+    '''
+    Builds INCOMING connections the node (so on its left side) based on the original node networks connections
+    '''
+
+    #{{{ TODO: - iterate through the inCon list of the current node
+    #           - reference node listed there and get its newNodeName if there's one, if there's None, TRY using the original name
+    #           - make the new connection using the gathered data
+    #           - ???
+    #           - profit
+
+    intersectionDictCurrentNode, intersectionDictToEngineCurrentNode = getDictIntersection(nodes, currentNode, fromEngine, toEngine)
+
+    if isinstance(currentNode.inCon, list):
+        for x in currentNode.inCon:
+            
+            oldConnectionFieldName = x[1].split(".")[1]
+            oldConnectionNodeName = x[1].split(".")[0]
+            oldSelfSocketName = x[0].split(".")[1]
+            try:
+                newConnectionName = intersectionDictToEngineCurrentNode[oldConnectionFieldName] # WARN: THIS IS WRONG. WE NEED THE CONNECTION NAME FROM THE CONNECTED NODE AND NOT THE CURRENT ONE
+                newSelfSocketName = intersectionDictToEngineCurrentNode[oldSelfSocketName]
+                print(f'New connection name: {newConnectionName}') #debugLine
+                print(f'New self-socket name: {newSelfSocketName}') #debugLine
+
+            except:
+                print("Node with no dict found! Doing nothing...")
+
+            # {{{ get the new node based on the oldConnectionNodeName
+            
+            # }}}
+
+            # cmd.connectAttr(f'{currentNode.convertedName}.{newConnectionName}', node2.attribute)
+
+    #}}}
 
     return
 
 
 def convertNodeTree(nodes: list[Node], fromEngine: str, toEngine: str):
+    '''
+    Creates new nodes based on the existing ones, copies all settings that have an equivalent or alternative on the new node to the new node,
+    and rebuilds the connections between the newly created nodes.
+    '''
 
-    for x in nodes: #debuglines <- bc only testing for maya file nodes now
-        if x.nType == "file" or x.nType == "aiStandardSurface": #debuglines
-            convertNode(x, fromEngine, toEngine) #debuglines
-    # newRMSurface = cmd.shadingNode("PxrSurface", asShader = True)
+    for i in range(0, len(nodes)):
+        if nodes[i].nType == "file" or nodes[i].nType == "aiStandardSurface": #debuglines
+            nodes[i].convertedName = convertNode(nodes[i], fromEngine, toEngine)
+
+    for i in range(0, len(nodes)): # not putting this in the for loop above as the order in which we get the nodes from the user is uncertain, thus building incoming connections might not be possible just yet as not all necessary nodes are there yet.
+        if nodes[i].nType == "file" or nodes[i].nType == "aiStandardSurface": #debuglines
+            connectNode(nodes, nodes[i], fromEngine, toEngine)
 
     return
 
