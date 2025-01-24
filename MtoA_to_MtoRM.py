@@ -182,12 +182,22 @@ ENGINECONVERSIONS ={
             "frozen": [NodeField(commonName= "frozen")],
             "isHistoricallyInteresting": [NodeField(commonName= "isHistoricallyInteresting")],
             "nodeState": [NodeField(commonName= "nodeState")],
-            #"binMembership": "binMembership",
             "fileTextureName": [NodeField(commonName= "filename")],
+            "colorOffset": [NodeField(commonName= "colorOffset")],
+            "colorOffsetR": [NodeField(commonName= "colorOffsetR")],
+            "colorOffsetG": [NodeField(commonName= "colorOffsetG")],
+            "colorOffsetB": [NodeField(commonName= "colorOffsetB")],
             "outColor": [NodeField(commonName= "outColor")],
             "outColorR": [NodeField(commonName= "outColorR")],
             "outColorG": [NodeField(commonName= "outColorG")],
             "outColorB": [NodeField(commonName= "outColorB")],
+            "colorSpace": [NodeField(commonName= "linearize", func= lambda x: True if x == "sRGB" else False), NodeField(commonName= "colorSpace")],
+            "uvTilingMode": [NodeField(commonName= "uvTilingMode", func = lambda x: 0 if x == 0 else 0 if x == 4 else 4-x)],
+            "colorGain": [NodeField(commonName= "colorGain")],
+            "colorGainR": [NodeField(commonName= "colorGainR")],
+            "colorGainG": [NodeField(commonName= "colorGainG")],
+            "colorGainB": [NodeField(commonName= "colorGainB")],
+            "invert": [NodeField(commonName= "invert")],
         },
     },
 
@@ -199,12 +209,26 @@ ENGINECONVERSIONS ={
             "frozen": "frozen",
             "isHistoricallyInteresting": "isHistoricallyInteresting",
             "nodeState": "nodeState",
-            #"binMembership": "binMembership",
             "filename": "filename",
+            "colorOffset": "colorOffset",
+            "colorOffsetR": "colorOffsetR",
+            "colorOffsetG": "colorOffsetG",
+            "colorOffsetB": "colorOffsetB",
             "outColor": "resultRGB",
             "outColorR": "resultR",
             "outColorG": "resultG",
             "outColorB": "resultB",
+            "linearize": "linearize",
+            "uvTilingMode": "atlasStyle",
+            "colorGain": "colorScale",
+            "colorGainR": "colorScaleR",
+            "colorGainG": "colorScaleG",
+            "colorGainB": "colorScaleB",
+            "resultR": "resultR",
+            "resultG": "resultG",
+            "resultB": "resultB",
+            "resultA": "resultA",
+            "invertT": "invertT",
         },
 	"surfaceShader": {
             "nodeTypeName": "PxrSurface",
@@ -741,18 +765,20 @@ def convertNode(node: Node, fromEngine: str, toEngine: str) -> str:
         nodeFieldDataType = cmd.getAttr(f"{newNode}.{conversionToDict[nodeInfo['nodeTypeName']][f'{x}']}",typ = True)
 
 
-        #print(f'\n$$$\nField: {conversionToDict[nodeInfo["nodeTypeName"]][f"{x}"]}') #debugline
-        #print(nodeInfo[x]) #debugline
-        #print("That python percieves as:") #debugline
-        #print(type(nodeInfo[x])) #debugline
-        #print(f"old Node Data type: {oldNodeFieldDataType}") #debugline
-        #print(f"NEW Node Data type: {nodeFieldDataType}") #debugline
+        print(f'\n$$$\nField: {conversionToDict[nodeInfo["nodeTypeName"]][f"{x}"]}') #debugline
+        print(f'field name: {x}') #debugline
+        print(nodeInfo[x]) #debugline
+        print("That python percieves as:") #debugline
+        print(type(nodeInfo[x])) #debugline
+        print(f"old Node Data type: {oldNodeFieldDataType}") #debugline
+        print(f"NEW Node Data type: {nodeFieldDataType}") #debugline
 
 
         if nodeFieldData != None and nodeFieldData != None:
             try: # This block is a solution for the fact that some node fields need a type as well a value to be assignable, but not every field accepts a type.
-                    cmd.setAttr(f"{newNode}.{x}", nodeFieldData) # setting attributes of the spawend node
-            except:
+                    cmd.setAttr(f'{newNode}.{conversionToDict[nodeInfo["nodeTypeName"]][f"{x}"]}', nodeFieldData) # setting attributes of the spawend node
+            except Exception as e:
+                    print(f"ZE ERROR WAS: {e}")
                     if nodeFieldDataType == "float3": # Maya has it's own type for vectors and such so if we need them, we have to convert the tuple containing it into Maya's type first... (in this case we have to pass float3 not as a list/tuple but individual values. Weird flex, but ok..)
                         try: # This try except block is here because during conversion there might be instances when fromEngine only has a float value but toEngine needs a float3 value instead. First we try assigning the float3 to float3 but if it doesn't work we assign the float to all elements of float3
                             cmd.setAttr(f"{newNode}.{conversionToDict[nodeInfo['nodeTypeName']][f'{x}']}", nodeFieldData[0], nodeFieldData[1], nodeFieldData[2], typ= f"{nodeFieldDataType}") # setting attributes of the spawend node and also specifying a type
