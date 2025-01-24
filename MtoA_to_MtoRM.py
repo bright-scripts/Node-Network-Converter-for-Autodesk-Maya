@@ -1,4 +1,5 @@
 import maya.cmds as cmd
+import traceback #debugline
 
 
 
@@ -199,10 +200,88 @@ ENGINECONVERSIONS ={
             "colorGainB": [NodeField(commonName= "colorGainB")],
             "invert": [NodeField(commonName= "invert")],
         },
+        "aiNormalMap": {
+            "nodeTypeName": [NodeField(commonName= "normalMapper")],
+            "caching": [NodeField(commonName= "caching")],
+            "frozen": [NodeField(commonName= "frozen")],
+            "isHistoricallyInteresting": [NodeField(commonName= "isHistoricallyInteresting")],
+            "nodeState": [NodeField(commonName= "nodeState")],
+            "outValue": [NodeField(commonName= "outValue")],
+            "outValueX": [NodeField(commonName= "outValueX")],
+            "outValueY": [NodeField(commonName= "outValueY")],
+            "outValueZ": [NodeField(commonName= "outValueZ")],
+            "outTransparency": [NodeField(commonName= "outTransparency")],
+            "outTransparencyR": [NodeField(commonName= "outTransparencyR")],
+            "outTransparencyG": [NodeField(commonName= "outTransparencyG")],
+            "outTransparencyB": [NodeField(commonName= "outTransparencyB")],
+            "input": [NodeField(commonName= "input")],
+            "inputX": [NodeField(commonName= "inputX")],
+            "inputY": [NodeField(commonName= "inputY")],
+            "inputZ": [NodeField(commonName= "inputZ")],
+            "tangent": [NodeField(commonName= "tangent")],
+            "tangentX": [NodeField(commonName= "tangentX")],
+            "tangentY": [NodeField(commonName= "tangentY")],
+            "tangentZ": [NodeField(commonName= "tangentZ")],
+            "normal": [NodeField(commonName= "normal")],
+            "normalX": [NodeField(commonName= "normalX")],
+            "normalY": [NodeField(commonName= "normalY")],
+            "normalZ": [NodeField(commonName= "normalZ")],
+            "strength": [NodeField(commonName= "strength")],
+            "invertZ": [NodeField(commonName= "invertZ")],
+            "invertX": [NodeField(commonName= "invertX")],
+            "invertY": [NodeField(commonName= "invertY")],
+            "order": [NodeField(commonName= "order")],
+            "colorToSigned": [NodeField(commonName= "colorToSigned")],
+            "tangentSpace": [NodeField(commonName= "tangentSpace")],
+        }
     },
 
     # "Translating" common attribute names to Renderman specific ones
     "COMMON_TO_RENDERMAN": {
+        "normalMapper":{
+            "nodeTypeName": "PxrNormalMap",
+            "caching": "caching",
+            "frozen": "frozen",
+            "isHistoricallyInteresting": "isHistoricallyInteresting",
+            "nodeState": "nodeState",
+            "outValue": "resultN",
+            "outValueX": "resultNX",
+            "outValueY": "resultNY",
+            "outValueZ": "resultNZ",
+            "resultNG": "resultNG",
+            "resultNGX": "resultNGX",
+            "resultNGY": "resultNGY",
+            "resultNGZ": "resultNGZ",
+            "input": "inputRGB",
+            "inputX": "inputRGBR",
+            "inputY": "inputRGBG",
+            "inputZ": "inputRGBB",
+            "filename": "filename",
+            "normal": "bumpOverlay",
+            "normalX": "bumpOverlayX",
+            "normalY": "bumpOverlayY",
+            "normalZ": "bumpOverlayZ",
+            "strength": "bumpScale",
+            "invertZ": "invertBump",
+            "invertX": "flipX",
+            "invertY": "flipY",
+            "orientation": "orientation",
+            "firstChannel": "firstChannel",
+            "atlasStyle": "atlasStyle",
+            "invertT": "invertT",
+            "blur": "blur",
+            "lerp": "lerp",
+            "filter": "filter",
+            "smoothRayDerivs": "smoothRayDerivs",
+            "manifold": "manifold",
+            "mipBias": "mipBias",
+            "maxResolution": "maxResolution",
+            "optimizeIndirect": "optimizeIndirect",
+            "reverse": "reverse",
+            "adjustAmount": "adjustAmount",
+            "surfaceNormalMix": "surfaceNormalMix",
+            "disable": "disable",
+        },
         "textureFileNode": {
             "nodeTypeName": "PxrTexture",
             "caching": "caching",
@@ -765,20 +844,20 @@ def convertNode(node: Node, fromEngine: str, toEngine: str) -> str:
         nodeFieldDataType = cmd.getAttr(f"{newNode}.{conversionToDict[nodeInfo['nodeTypeName']][f'{x}']}",typ = True)
 
 
-        print(f'\n$$$\nField: {conversionToDict[nodeInfo["nodeTypeName"]][f"{x}"]}') #debugline
-        print(f'field name: {x}') #debugline
-        print(nodeInfo[x]) #debugline
-        print("That python percieves as:") #debugline
-        print(type(nodeInfo[x])) #debugline
-        print(f"old Node Data type: {oldNodeFieldDataType}") #debugline
-        print(f"NEW Node Data type: {nodeFieldDataType}") #debugline
+        #print(f'\n$$$\nField: {conversionToDict[nodeInfo["nodeTypeName"]][f"{x}"]}') #debugline
+        #print(f'field name: {x}') #debugline
+        #print(nodeInfo[x]) #debugline
+        #print("That python percieves as:") #debugline
+        #print(type(nodeInfo[x])) #debugline
+        #print(f"old Node Data type: {oldNodeFieldDataType}") #debugline
+        #print(f"NEW Node Data type: {nodeFieldDataType}") #debugline
 
 
         if nodeFieldData != None and nodeFieldData != None:
             try: # This block is a solution for the fact that some node fields need a type as well a value to be assignable, but not every field accepts a type.
                     cmd.setAttr(f'{newNode}.{conversionToDict[nodeInfo["nodeTypeName"]][f"{x}"]}', nodeFieldData) # setting attributes of the spawend node
             except Exception as e:
-                    print(f"ZE ERROR WAS: {e}")
+                    #print(f"ZE ERROR WAS: {e}") #debugline
                     if nodeFieldDataType == "float3": # Maya has it's own type for vectors and such so if we need them, we have to convert the tuple containing it into Maya's type first... (in this case we have to pass float3 not as a list/tuple but individual values. Weird flex, but ok..)
                         try: # This try except block is here because during conversion there might be instances when fromEngine only has a float value but toEngine needs a float3 value instead. First we try assigning the float3 to float3 but if it doesn't work we assign the float to all elements of float3
                             cmd.setAttr(f"{newNode}.{conversionToDict[nodeInfo['nodeTypeName']][f'{x}']}", nodeFieldData[0], nodeFieldData[1], nodeFieldData[2], typ= f"{nodeFieldDataType}") # setting attributes of the spawend node and also specifying a type
@@ -813,8 +892,10 @@ def getDictIntersection(currentNode: Node, fromEngine: str, toEngine: str):
     if currentNode.nType in conversionFromDict:
         for deepValue in conversionFromDict[currentNode.nType].values():
             for item in deepValue:
+                #print(f'@@@ Field name: {item.commonName}') #debugline
                 if item.commonName in conversionToDict[conversionFromDict[currentNode.nType]["nodeTypeName"][0].commonName]: # get only the fromEngine fields that have an equivalent in toEngine fields
                     intersectionDict.append(item.commonName)
+                    #print(f'@@@+ Found in {conversionFromDict[currentNode.nType]["nodeTypeName"][0].commonName}!') #debugline
                     #print(item.commonName) #debugline
     else:
         print(f'\n! Node Converter: "{currentNode.name}" doesn\'t have the necessary conversion dictionaries! Skipping it...\n! - Missing dict for node type: {currentNode.nType}')
@@ -847,16 +928,23 @@ def connectNode(nodes: list[Node], currentNode: Node, fromEngine: str, toEngine:
             oldNode: Node
             oNID: dict
             oldSelfSocketName: str = x[0].split(".")[1]
+            print(f'łłł {currentNode.convertedName}')
+            print(f'łłł - oldConnection Field Name: {oldConnectionFieldName}')
+            print(f'łłł - oldConnection Node  Name: {oldConnectionNodeName}')
 
             for node in nodes: # find connected node in sotred nodes
                 if oldConnectionNodeName == node.name:
                     oldNode = node
                     oNID = getDictIntersection(oldNode, fromEngine, toEngine)
+                    print(f'oNID ict for {node.name}:') #debugline
+                    print(f'+ {oNID}') #debugline
                     break
+            
+            # FIX: newSelfSocketName is not getting the correct value. It uses the old nodes socket name.
+            # TODO: Convert it into the new socket type!
 
             try:
                 newConnectionName = oNID[oldConnectionFieldName]
-                # For this we have to find the node that's original name is this connections name.
                 newSelfSocketName = intersectionDictToEngineCurrentNode[oldSelfSocketName]
                 print(f'New connection name: {oldNode.convertedName}.{newConnectionName}') #debugLine
                 print(f'New self-socket name: {currentNode.convertedName}.{newSelfSocketName}') #debugLine
@@ -864,8 +952,11 @@ def connectNode(nodes: list[Node], currentNode: Node, fromEngine: str, toEngine:
 
             except Exception as e:
                 print(f"\n! Node Converter: Node field with no dict entry found! Skipping field connection...")
-                print(f'! - Original connection came from: {oldNode.name}.{e}')
+                print(f'! - Original connection came from: {oldNode.name}.{oldConnectionFieldName}')
                 print(f"! - Original connection connected to: {currentNode.name}.{oldSelfSocketName}")
+                print(f"! - The new connection would have been: ")
+                error_message = traceback.format_exc() #debugline
+                print(f"! - And the python interpreter would like to let you know that: {error_message}") #debugline
 
             # {{{ get the new node based on the oldConnectionNodeName
             
@@ -885,11 +976,12 @@ def convertNodeTree(nodes: list[Node], fromEngine: str, toEngine: str):
     '''
 
     for i in range(0, len(nodes)):
-        if nodes[i].nType == "file" or nodes[i].nType == "aiStandardSurface": #debuglines
+        if nodes[i].nType == "file" or nodes[i].nType == "aiStandardSurface" or nodes[i].nType == "aiNormalMap": #debuglines
             nodes[i].convertedName = convertNode(nodes[i], fromEngine, toEngine)
+            #print(f'*** {nodes[i].name} -> {nodes[i].convertedName}') #debugline
 
     for i in range(0, len(nodes)): # not putting this in the for loop above as the order in which we get the nodes from the user is uncertain, thus building incoming connections might not be possible just yet as not all necessary nodes are there yet.
-        if nodes[i].nType == "file" or nodes[i].nType == "aiStandardSurface": #debuglines
+        if nodes[i].nType == "file" or nodes[i].nType == "aiStandardSurface" or nodes[i].nType == "aiNormalMap": #debuglines
             connectNode(nodes, nodes[i], fromEngine, toEngine)
 
     return
