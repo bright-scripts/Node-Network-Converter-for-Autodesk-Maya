@@ -777,25 +777,28 @@ def convertNode(node: Node, fromEngine: str, toEngine: str) -> str:
 
     return newNode
 
-def getDictIntersection(nodes: list[Node], currentNode: Node, fromEngine: str, toEngine: str):
+def getDictIntersection(currentNode: Node, fromEngine: str, toEngine: str):
     conversionFromDict = ENGINECONVERSIONS[FROMENGINES[fromEngine]] # This returns a dict that contains subdictionaries of shader node information.
     conversionToDict = ENGINECONVERSIONS[TOENGINES[toEngine]]
 
     intersectionDict: list = []
     intersectionDictToEngine: dict = {}
     #print(f"CURRENT NODE TYPE: {currentNode.nType}") #debugline
-    for deepValue in conversionFromDict[currentNode.nType].values():
-        for item in deepValue:
-            if item.commonName in conversionToDict[conversionFromDict[currentNode.nType]["nodeTypeName"][0].commonName]: # get only the fromEngine fields that have an equivalent in toEngine fields
-                intersectionDict.append(item.commonName)
-                #print(item.commonName) #debugline
+    if currentNode.nType in conversionFromDict:
+        for deepValue in conversionFromDict[currentNode.nType].values():
+            for item in deepValue:
+                if item.commonName in conversionToDict[conversionFromDict[currentNode.nType]["nodeTypeName"][0].commonName]: # get only the fromEngine fields that have an equivalent in toEngine fields
+                    intersectionDict.append(item.commonName)
+                    #print(item.commonName) #debugline
+    else:
+        print(f'\n! Node Converter: "{currentNode.name}" doesn\'t have the necessary conversion dictionaries! Skipping it...\n! - Missing dict for node type: {currentNode.nType}')
 
     # {{{converting intersectionDict to toEngine field names from common into conversionDictToEngine
     for i in range(0, len(intersectionDict)):
         intersectionDictToEngine[intersectionDict[i]] = conversionToDict[conversionFromDict[currentNode.nType]["nodeTypeName"][0].commonName][intersectionDict[i]]
         #print(f'+++ {intersectionDictToEngine}') #debugline
     # }}}
-    return intersectionDict, intersectionDictToEngine
+    return intersectionDictToEngine
 
 
 def connectNode(nodes: list[Node], currentNode: Node, fromEngine: str, toEngine: str):
@@ -808,23 +811,35 @@ def connectNode(nodes: list[Node], currentNode: Node, fromEngine: str, toEngine:
     #           - make the new connection using the gathered data
     #           - ???
     #           - profit
-
-    intersectionDictCurrentNode, intersectionDictToEngineCurrentNode = getDictIntersection(nodes, currentNode, fromEngine, toEngine)
+    intersectionDictToEngineCurrentNode = getDictIntersection(currentNode, fromEngine, toEngine)
 
     if isinstance(currentNode.inCon, list):
         for x in currentNode.inCon:
-            
-            oldConnectionFieldName = x[1].split(".")[1]
-            oldConnectionNodeName = x[1].split(".")[0]
-            oldSelfSocketName = x[0].split(".")[1]
-            try:
-                newConnectionName = intersectionDictToEngineCurrentNode[oldConnectionFieldName] # WARN: THIS IS WRONG. WE NEED THE CONNECTION NAME FROM THE CONNECTED NODE AND NOT THE CURRENT ONE
-                newSelfSocketName = intersectionDictToEngineCurrentNode[oldSelfSocketName]
-                print(f'New connection name: {newConnectionName}') #debugLine
-                print(f'New self-socket name: {newSelfSocketName}') #debugLine
 
-            except:
-                print("Node with no dict found! Doing nothing...")
+            oldConnectionFieldName: str = x[1].split(".")[1]
+            oldConnectionNodeName: str = x[1].split(".")[0]
+            oldNode: Node
+            oNID: dict
+            oldSelfSocketName: str = x[0].split(".")[1]
+
+            for node in nodes: # find connected node in sotred nodes
+                if oldConnectionNodeName == node.name:
+                    oldNode = node
+                    oNID = getDictIntersection(oldNode, fromEngine, toEngine)
+                    break
+
+            try:
+                newConnectionName = oNID[oldConnectionFieldName]
+                # For this we have to find the node that's original name is this connections name.
+                newSelfSocketName = intersectionDictToEngineCurrentNode[oldSelfSocketName]
+                print(f'New connection name: {oldNode.convertedName}.{newConnectionName}') #debugLine
+                print(f'New self-socket name: {currentNode.convertedName}.{newSelfSocketName}') #debugLine
+                cmd.connectAttr(f'{oldNode.convertedName}.{newConnectionName}', f'{currentNode.convertedName}.{newSelfSocketName}')
+
+            except Exception as e:
+                print(f"\n! Node Converter: Node field with no dict entry found! Skipping field connection...")
+                print(f'! - Original connection came from: {oldNode.name}.{e}')
+                print(f"! - Original connection connected to: {currentNode.name}.{oldSelfSocketName}")
 
             # {{{ get the new node based on the oldConnectionNodeName
             
