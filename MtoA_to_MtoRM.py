@@ -1,6 +1,9 @@
 import maya.cmds as cmd
-import traceback #debugline
+import traceback
 
+# This conversion script has been written by Ronald Sendula
+# Contact for bug and other reports or questions:
+# - Discord: mellow_moth
 
 
 ### {{{ class definitions
@@ -767,10 +770,11 @@ def crawlNodeTree(sNodes: list[Node]):
     return nodes
 
 
-def convertNode(node: Node, fromEngine: str, toEngine: str) -> str:
+def convertNode(node: Node, fromEngine: str, toEngine: str) -> str | None:
     '''
     Convert the given node from the provided fromEngine engine's own system to the toEngine's equivalent node
     Returns the name of the newly created node.
+    OR None if the node cannot be converted.
     '''
 
     # {{{ DONE: get and store existing attributes in the "common" types
@@ -783,101 +787,109 @@ def convertNode(node: Node, fromEngine: str, toEngine: str) -> str:
     nodeInfo: dict = {}
     # ^ Key: Node field's name
     # ^ Value: node field's value
-    nodeInfo["nodeTypeName"] = conversionFromDict[node.nType]["nodeTypeName"][0].commonName
 
-    for k, v in list(conversionFromDict[node.nType].items())[1:]: # Iterate through the dict but skip the first item in it (in this case the key "nodeTypeName")
-        for item in v:
-            if callable(item.func):
-                #print(f"!!! {k} -key is CALLABLE !!!") #debugline
-                #print("Its type is:") #debugline
-                #print(cmd.getAttr(f"{node.name}.{k}",typ = True)) #debugline
-                #print("its value is:") #debugline
-                #try: #debugline
-                #    print(cmd.getAttr(f"{node.name}.{k}")[0]) #debugline
-                #    print("That python percieves as:") #debugline
-                #    print(type(cmd.getAttr(f"{node.name}.{k}")[0])) #debugline
-                #except: #debugline
-                #    print(cmd.getAttr(f"{node.name}.{k}")) #debugline
-                #    print("That python percieves as:") #debugline
-                #    print(type(cmd.getAttr(f"{node.name}.{k}"))) #debugline
-                nodeInfo[f"{item.commonName}"] = item.func(cmd.getAttr(f"{node.name}.{k}"))
-            else:
+    if node.nType in conversionFromDict.keys():
+        nodeInfo["nodeTypeName"] = conversionFromDict[node.nType]["nodeTypeName"][0].commonName
 
-                currentAttribute = cmd.getAttr(f"{node.name}.{k}")
-                if isinstance(currentAttribute, list):
-                    #print(f"?????????????????????????????????????????????????????????????????????????????????????????????????????????????\nConverting ::{k}:: to tuple") #debugline #debugline
-                    #print(f"Before con: {currentAttribute}") #debugline
-                    nodeInfo[f"{item.commonName}"] = currentAttribute[0]
-                    #print(f'After con: {nodeInfo[f"{item.commonName}"]}') #debugline
+        for k, v in list(conversionFromDict[node.nType].items())[1:]: # Iterate through the dict but skip the first item in it (in this case the key "nodeTypeName")
+            for item in v:
+                if callable(item.func):
+                    #print(f"!!! {k} -key is CALLABLE !!!") #debugline
+                    #print("Its type is:") #debugline
+                    #print(cmd.getAttr(f"{node.name}.{k}",typ = True)) #debugline
+                    #print("its value is:") #debugline
+                    #try: #debugline
+                    #    print(cmd.getAttr(f"{node.name}.{k}")[0]) #debugline
+                    #    print("That python percieves as:") #debugline
+                    #    print(type(cmd.getAttr(f"{node.name}.{k}")[0])) #debugline
+                    #except: #debugline
+                    #    print(cmd.getAttr(f"{node.name}.{k}")) #debugline
+                    #    print("That python percieves as:") #debugline
+                    #    print(type(cmd.getAttr(f"{node.name}.{k}"))) #debugline
+                    nodeInfo[f"{item.commonName}"] = item.func(cmd.getAttr(f"{node.name}.{k}"))
                 else:
-                    #print(f'::{k}:: is DEFINITELY NOT A LIST, NU-UH, NO WAY. NADA!\nSee?: {currentAttribute}') #debugline
-                    nodeInfo[f"{item.commonName}"] = currentAttribute
-    #            nodeInfo[f"{conversionFromDict[node.nType][k].commonName}"] = currentAttribute
 
-            nodeInfo[f"{item.commonName}-type"] = cmd.getAttr(f"{node.name}.{k}",typ = True)
-            # ^ set the value and type attributes for the node that's been passed in the function call; to the common node and fields names based on the madeup specification
-
-    #print("######################################") #debugline
-    #print(nodeInfo) #debugline
-    # }}}
-
-    # {{{ DONE: convert common type to toEngine's types
-    #           & spawn toEngine node with converted attributes
-    conversionToDict = ENGINECONVERSIONS[TOENGINES[toEngine]]
-    intersectionDict: list = []
-    for deepValue in conversionFromDict[node.nType].values():
-        for item in deepValue:
-            #print(f"deepValue: {deepValue.commonName}") #debugLine
-            #print(f"keys: {conversionToDict[nodeInfo['nodeTypeName']]}") #debugLine
-            if item.commonName in conversionToDict[nodeInfo["nodeTypeName"]]: # get only the fromEngine fields that have an equivalent in toEngine fields
-                intersectionDict.append(item.commonName)
-
-    #print(f"!!! INTERSECTION !!! {intersectionDict}") #debugline
-
-    newNode: str = cmd.shadingNode(conversionToDict[nodeInfo["nodeTypeName"]]["nodeTypeName"], asShader= True) # creating new node in hypershade
-
-    for x in intersectionDict: # Iterate through the dict and assign attributes to the new node
-        nodeFieldData = None
-
-        nodeFieldData = nodeInfo[x]
-        oldNodeFieldDataType = nodeInfo[f'{x}-type']
-        nodeFieldDataType = cmd.getAttr(f"{newNode}.{conversionToDict[nodeInfo['nodeTypeName']][f'{x}']}",typ = True)
-
-
-        #print(f'\n$$$\nField: {conversionToDict[nodeInfo["nodeTypeName"]][f"{x}"]}') #debugline
-        #print(f'field name: {x}') #debugline
-        #print(nodeInfo[x]) #debugline
-        #print("That python percieves as:") #debugline
-        #print(type(nodeInfo[x])) #debugline
-        #print(f"old Node Data type: {oldNodeFieldDataType}") #debugline
-        #print(f"NEW Node Data type: {nodeFieldDataType}") #debugline
-
-
-        if nodeFieldData != None and nodeFieldData != None:
-            try: # This block is a solution for the fact that some node fields need a type as well a value to be assignable, but not every field accepts a type.
-                    cmd.setAttr(f'{newNode}.{conversionToDict[nodeInfo["nodeTypeName"]][f"{x}"]}', nodeFieldData) # setting attributes of the spawend node
-            except Exception as e:
-                    #print(f"ZE ERROR WAS: {e}") #debugline
-                    if nodeFieldDataType == "float3": # Maya has it's own type for vectors and such so if we need them, we have to convert the tuple containing it into Maya's type first... (in this case we have to pass float3 not as a list/tuple but individual values. Weird flex, but ok..)
-                        try: # This try except block is here because during conversion there might be instances when fromEngine only has a float value but toEngine needs a float3 value instead. First we try assigning the float3 to float3 but if it doesn't work we assign the float to all elements of float3
-                            cmd.setAttr(f"{newNode}.{conversionToDict[nodeInfo['nodeTypeName']][f'{x}']}", nodeFieldData[0], nodeFieldData[1], nodeFieldData[2], typ= f"{nodeFieldDataType}") # setting attributes of the spawend node and also specifying a type
-                        except:
-                            cmd.setAttr(f"{newNode}.{conversionToDict[nodeInfo['nodeTypeName']][f'{x}']}", nodeFieldData, nodeFieldData, nodeFieldData, typ= f"{nodeFieldDataType}") 
-                    elif nodeFieldDataType == "float":
-
-                        if oldNodeFieldDataType == "float3": # if 
-                            cmd.setAttr(f"{newNode}.{conversionToDict[nodeInfo['nodeTypeName']][f'{x}']}", nodeFieldData[0])
-                        elif nodeFieldData < 0:
-                            cmd.setAttr(f"{newNode}.{conversionToDict[nodeInfo['nodeTypeName']][f'{x}']}", (nodeFieldData*-1))
-                        else:
-                            cmd.setAttr(f"{newNode}.{conversionToDict[nodeInfo['nodeTypeName']][f'{x}']}", nodeFieldData)
-
+                    currentAttribute = cmd.getAttr(f"{node.name}.{k}")
+                    if isinstance(currentAttribute, list):
+                        #print(f"?????????????????????????????????????????????????????????????????????????????????????????????????????????????\nConverting ::{k}:: to tuple") #debugline #debugline
+                        #print(f"Before con: {currentAttribute}") #debugline
+                        nodeInfo[f"{item.commonName}"] = currentAttribute[0]
+                        #print(f'After con: {nodeInfo[f"{item.commonName}"]}') #debugline
                     else:
-                        cmd.setAttr(f"{newNode}.{conversionToDict[nodeInfo['nodeTypeName']][f'{x}']}", nodeFieldData, typ= f"{nodeFieldDataType}") # setting attributes of the spawend node and also specifying a type
+                        #print(f'::{k}:: is DEFINITELY NOT A LIST, NU-UH, NO WAY. NADA!\nSee?: {currentAttribute}') #debugline
+                        nodeInfo[f"{item.commonName}"] = currentAttribute
+        #            nodeInfo[f"{conversionFromDict[node.nType][k].commonName}"] = currentAttribute
 
-	    # ^ using the previously saved node field information create a new node and assign values from the original node fields to new node; using the common -> toEngine translated dictionary as a reference
-            #print(f'SET {nodeInfo[x]} TO {newNode}.{conversionToDict[nodeInfo["nodeTypeName"]][f"{x}"]}') #debugline
-    # }}}
+                nodeInfo[f"{item.commonName}-type"] = cmd.getAttr(f"{node.name}.{k}",typ = True)
+                # ^ set the value and type attributes for the node that's been passed in the function call; to the common node and fields names based on the madeup specification
+
+        #print("######################################") #debugline
+        #print(nodeInfo) #debugline
+        # }}}
+
+        # {{{ DONE: convert common type to toEngine's types
+        #           & spawn toEngine node with converted attributes
+        conversionToDict = ENGINECONVERSIONS[TOENGINES[toEngine]]
+        intersectionDict: list = []
+        for deepValue in conversionFromDict[node.nType].values():
+            for item in deepValue:
+                #print(f"deepValue: {deepValue.commonName}") #debugLine
+                #print(f"keys: {conversionToDict[nodeInfo['nodeTypeName']]}") #debugLine
+                if item.commonName in conversionToDict[nodeInfo["nodeTypeName"]]: # get only the fromEngine fields that have an equivalent in toEngine fields
+                    intersectionDict.append(item.commonName)
+
+        #print(f"!!! INTERSECTION !!! {intersectionDict}") #debugline
+
+        newNode: str | None = cmd.shadingNode(conversionToDict[nodeInfo["nodeTypeName"]]["nodeTypeName"], asShader= True) # creating new node in hypershade
+
+        for x in intersectionDict: # Iterate through the dict and assign attributes to the new node
+            nodeFieldData = None
+
+            nodeFieldData = nodeInfo[x]
+            oldNodeFieldDataType = nodeInfo[f'{x}-type']
+            nodeFieldDataType = cmd.getAttr(f"{newNode}.{conversionToDict[nodeInfo['nodeTypeName']][f'{x}']}",typ = True)
+
+
+            #print(f'\n$$$\nField: {conversionToDict[nodeInfo["nodeTypeName"]][f"{x}"]}') #debugline
+            #print(f'field name: {x}') #debugline
+            #print(nodeInfo[x]) #debugline
+            #print("That python percieves as:") #debugline
+            #print(type(nodeInfo[x])) #debugline
+            #print(f"old Node Data type: {oldNodeFieldDataType}") #debugline
+            #print(f"NEW Node Data type: {nodeFieldDataType}") #debugline
+
+
+            if nodeFieldData != None and nodeFieldData != None:
+                try: # This block is a solution for the fact that some node fields need a type as well a value to be assignable, but not every field accepts a type.
+                        cmd.setAttr(f'{newNode}.{conversionToDict[nodeInfo["nodeTypeName"]][f"{x}"]}', nodeFieldData) # setting attributes of the spawend node
+                except Exception as e:
+                        #print(f"ZE ERROR WAS: {e}") #debugline
+                        if nodeFieldDataType == "float3": # Maya has it's own type for vectors and such so if we need them, we have to convert the tuple containing it into Maya's type first... (in this case we have to pass float3 not as a list/tuple but individual values. Weird flex, but ok..)
+                            try: # This try except block is here because during conversion there might be instances when fromEngine only has a float value but toEngine needs a float3 value instead. First we try assigning the float3 to float3 but if it doesn't work we assign the float to all elements of float3
+                                cmd.setAttr(f"{newNode}.{conversionToDict[nodeInfo['nodeTypeName']][f'{x}']}", nodeFieldData[0], nodeFieldData[1], nodeFieldData[2], typ= f"{nodeFieldDataType}") # setting attributes of the spawend node and also specifying a type
+                            except:
+                                cmd.setAttr(f"{newNode}.{conversionToDict[nodeInfo['nodeTypeName']][f'{x}']}", nodeFieldData, nodeFieldData, nodeFieldData, typ= f"{nodeFieldDataType}") 
+                        elif nodeFieldDataType == "float":
+
+                            if oldNodeFieldDataType == "float3": # if 
+                                cmd.setAttr(f"{newNode}.{conversionToDict[nodeInfo['nodeTypeName']][f'{x}']}", nodeFieldData[0])
+                            elif nodeFieldData < 0:
+                                cmd.setAttr(f"{newNode}.{conversionToDict[nodeInfo['nodeTypeName']][f'{x}']}", (nodeFieldData*-1))
+                            else:
+                                cmd.setAttr(f"{newNode}.{conversionToDict[nodeInfo['nodeTypeName']][f'{x}']}", nodeFieldData)
+
+                        else:
+                            cmd.setAttr(f"{newNode}.{conversionToDict[nodeInfo['nodeTypeName']][f'{x}']}", nodeFieldData, typ= f"{nodeFieldDataType}") # setting attributes of the spawend node and also specifying a type
+
+                # ^ using the previously saved node field information create a new node and assign values from the original node fields to new node; using the common -> toEngine translated dictionary as a reference
+                #print(f'SET {nodeInfo[x]} TO {newNode}.{conversionToDict[nodeInfo["nodeTypeName"]][f"{x}"]}') #debugline
+        # }}}
+    else:
+        print(f'! Node converter: No conversion dict(s) found for the following node type: {node.nType}.\n! Skipping node...')
+        newNode = None
+        # raise SystemExit(f'! Node converter: No conversion dict(s) found for the following node type: {node.nType}.\n! Terminating conversion...\n! P.S.: You\'ll have to clean up for now; sorry.. (ctrl+z maybe?)')
+
+
 
 
     return newNode
@@ -924,8 +936,11 @@ def connectNode(nodes: list[Node], currentNode: Node, fromEngine: str, toEngine:
     #           - make the new connection using the gathered data
     #           - ???
     #           - profit
-    convertedIntersection = getDictIntersection(currentNode, fromEngine, toEngine)
-    print(convertedIntersection) #debugline
+    if currentNode.nType in ENGINECONVERSIONS[FROMENGINES[fromEngine]].keys():
+        convertedIntersection = getDictIntersection(currentNode, fromEngine, toEngine)
+    else: 
+        print(f'! Node converter: Can\'t make connections to and from "{currentNode.name}", because it could not be converted to the new engine\n! - Missing conversion dict maybe?')
+        return
 
     if isinstance(currentNode.inCon, list):
         for x in currentNode.inCon:
@@ -935,45 +950,56 @@ def connectNode(nodes: list[Node], currentNode: Node, fromEngine: str, toEngine:
             oldNode: Node
             oNID: dict
             oldSelfSocketName: str = x[0].split(".")[1]
-            print(f'łłł Finding connections for this: {currentNode.convertedName}') #debugline
-            print(f'łłł - oldConnection Field Node Name . connection name: {oldConnectionFieldName}.{oldConnectionNodeName}') #debugline
-            print(f'łłł -          ->         oldSelfName and Socket Name: {currentNode.name}.{oldSelfSocketName}') #debugline
-            print(f'łłł old socket name - new socket name:') #debugline
-            print(f'łłł ->  {convertedIntersection}') #debugline
-            print(f'łłł - new slefSocketName: {currentNode.convertedName}.{convertedIntersection[oldSelfSocketName]}') #debugline
+            #print(f'łłł Finding connections for this: {currentNode.convertedName}') #debugline
+            #print(f'łłł - oldConnection Field Node Name . connection name: {oldConnectionFieldName}.{oldConnectionNodeName}') #debugline
+            #print(f'łłł -          ->         oldSelfName and Socket Name: {currentNode.name}.{oldSelfSocketName}') #debugline
+            #print(f'łłł old socket name - new socket name:') #debugline
+            #print(f'łłł ->  {convertedIntersection}') #debugline
+            #print(f'łłł - new slefSocketName: {currentNode.convertedName}.{convertedIntersection[oldSelfSocketName]}') #debugline
 
 
-            for node in nodes: # find connected node in sotred nodes
+            # {{{ Find connected node in nodes and make an intersection dict of it's converted fields as well
+            connectedNodeFound = False
+            for node in nodes:
                 if oldConnectionNodeName == node.name:
                     oldNode = node
-                    oNID = getDictIntersection(oldNode, fromEngine, toEngine)
-                    print(f'oNID ict for {node.name}:') #debugline
-                    print(f'+ {oNID}') #debugline
-                    break
+                    if oldNode.nType in ENGINECONVERSIONS[FROMENGINES[fromEngine]].keys():
+                        oNID = getDictIntersection(oldNode, fromEngine, toEngine)
+                        #print(f'oNID ict for {node.name}:') #debugline
+                        #print(f'+ {oNID}') #debugline
+                        connectedNodeFound = True
+                        break
+            # }}}
             
             # FIX: newSelfSocketName is not getting the correct value. It uses the old node's socket name.
             # TODO: Convert it into the new socket type!
 
-            try:
+            #{{{ Create the new connections based on the date we've gathered
+            #   1) set new connection name side A
+            #   2) set new connection name side B
+            #   3) connect them
+
+
+            if connectedNodeFound and oldSelfSocketName in convertedIntersection.keys():
                 newConnectionsName: list = oNID[oldConnectionFieldName]
-                newSelfSocketName = convertedIntersection[oldSelfSocketName]
-                print(f'New connection name: {oldNode.convertedName}.{newConnectionsName}') #debugLine
-                print(f'New self-socket name: {currentNode.convertedName}.{newSelfSocketName}') #debugLine
-                cmd.connectAttr(f'{oldNode.convertedName}.{newConnectionsName}', f'{currentNode.convertedName}.{newSelfSocketName}')
+                newSelfSocketName: list = convertedIntersection[oldSelfSocketName]
 
-            except Exception as e:
-                print(f"\n! Node Converter: Node field with no dict entry found! Skipping field connection...")
-                print(f'! - Original connection came from: {oldNode.name}.{oldConnectionFieldName}')
-                print(f"! - Original connection connected to: {currentNode.name}.{oldSelfSocketName}")
-                print(f"! - The new connection would have been: ")
-                error_message = traceback.format_exc() #debugline
-                print(f"! - And the python interpreter would like to let you know that: {error_message}") #debugline
+                for a in newConnectionsName:
+                    for b in newSelfSocketName:
+                        #print(f'New connection name: {oldNode.convertedName}.{a}') #debugLine
+                        #print(f'New self-socket name: {currentNode.convertedName}.{b}') #debugLine
+                        try:
+                            cmd.connectAttr(f'{oldNode.convertedName}.{a}', f'{currentNode.convertedName}.{b}')
+                        except Exception as e:
+                            print(f'! Node converter: couldn\'t create connection between:\n! - {oldNode.convertedName}.{a} and\n! - {currentNode.convertedName}.{b}')
+                            print(f'! Maybe there is no conversion dict for one of these nodes?')
+                            print(f'! The Python interpreter has the following to say about this:\n! - {e}')
+                            traceback.print_exc()
+            else:
+                print(f'! Node converter: Couldn\'t create connection for "{oldConnectionNodeName}.{oldConnectionFieldName}"')
+                print(f'! Expounding:\n! - Converted equivalent of the connected node was found: \n! -- {connectedNodeFound}\n! - Old connection\'s right side has equivalent on the new converted node:\n! -- {oldSelfSocketName in convertedIntersection.keys()}')
 
-            # {{{ get the new node based on the oldConnectionNodeName
-            
             # }}}
-
-            # cmd.connectAttr(f'{currentNode.convertedName}.{newConnectionName}', node2.attribute)
 
     #}}}
 
@@ -987,12 +1013,10 @@ def convertNodeTree(nodes: list[Node], fromEngine: str, toEngine: str):
     '''
 
     for i in range(0, len(nodes)):
-        if nodes[i].nType == "file" or nodes[i].nType == "aiStandardSurface" or nodes[i].nType == "aiNormalMap": #debuglines
-            nodes[i].convertedName = convertNode(nodes[i], fromEngine, toEngine)
-            #print(f'*** {nodes[i].name} -> {nodes[i].convertedName}') #debugline
+        nodes[i].convertedName = convertNode(nodes[i], fromEngine, toEngine)
 
     for i in range(0, len(nodes)): # not putting this in the for loop above as the order in which we get the nodes from the user is uncertain, thus building incoming connections might not be possible just yet as not all necessary nodes are there yet.
-        if nodes[i].nType == "file" or nodes[i].nType == "aiStandardSurface" or nodes[i].nType == "aiNormalMap": #debuglines
+        if nodes[i].convertedName != None:
             connectNode(nodes, nodes[i], fromEngine, toEngine)
 
     return
