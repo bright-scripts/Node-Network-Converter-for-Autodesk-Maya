@@ -685,11 +685,11 @@ def populateOutConnectionsData(node: Node) -> Node:
 
     outConTemp = cmd.listConnections(node.name, c = True, s = False, d = True, fnn = True, plugs = True)
 
-    print(f"$$$$$$$$$$$$$$$$$$$$$$$$$\noutgoing connections on {node.name}: {outgoingConnections}")
+    #print(f"$$$$$$$$$$$$$$$$$$$$$$$$$\noutgoing connections on {node.name}: {outgoingConnections}") #debugline
 
     if outConTemp != None:
         for i in range(0, len(outConTemp), 2):
-            print(f"{outConTemp[i+1]}'s type is: {cmd.nodeType(outConTemp[i+1])}") #debugline
+            #print(f"{outConTemp[i+1]}'s type is: {cmd.nodeType(outConTemp[i+1])}") #debugline
             if cmd.nodeType(outConTemp[i+1]) not in STOPCRAWLINGTYPES:
                 outgoingConnections.append([outConTemp[i], outConTemp[i+1]]) #every first outConTemp value will always be the current node and every second it's connection
 
@@ -746,12 +746,12 @@ def crawlNodeTree(sNodes: list[Node]):
     for i in range(0, len(sNodes)):
         sNodes[i] = populateInConnectionsData(sNodes[i])
         sNodes[i] = populateOutConnectionsData(sNodes[i])
-        print(sNodes[i]) #debugLine
+        #print(sNodes[i]) #debugLine
     # }}}
 
 
     #for i in range(0, 3): #debugline
-        print("/////////////////////////////////////////") #debugline
+    #    print("/////////////////////////////////////////") #debugline
 
     nodes: list[Node] = sNodes
     for i in range(0, len(sNodes)):
@@ -817,8 +817,8 @@ def convertNode(node: Node, fromEngine: str, toEngine: str) -> str:
             nodeInfo[f"{item.commonName}-type"] = cmd.getAttr(f"{node.name}.{k}",typ = True)
             # ^ set the value and type attributes for the node that's been passed in the function call; to the common node and fields names based on the madeup specification
 
-    print("######################################") #debugline
-    print(nodeInfo) #debugline
+    #print("######################################") #debugline
+    #print(nodeInfo) #debugline
     # }}}
 
     # {{{ DONE: convert common type to toEngine's types
@@ -882,30 +882,36 @@ def convertNode(node: Node, fromEngine: str, toEngine: str) -> str:
 
     return newNode
 
-def getDictIntersection(currentNode: Node, fromEngine: str, toEngine: str):
-    conversionFromDict = ENGINECONVERSIONS[FROMENGINES[fromEngine]] # This returns a dict that contains subdictionaries of shader node information.
-    conversionToDict = ENGINECONVERSIONS[TOENGINES[toEngine]]
+def getDictIntersection(currentNode: Node, fromEngine: str, toEngine: str) -> dict:
+    '''
+    Return a dictionary that has the intersection of a fromEngine - toEngine node conversion's corresponding fields
+    based on currentNode's type.
+    '''
 
-    intersectionDict: list = []
-    intersectionDictToEngine: dict = {}
-    #print(f"CURRENT NODE TYPE: {currentNode.nType}") #debugline
-    if currentNode.nType in conversionFromDict:
-        for deepValue in conversionFromDict[currentNode.nType].values():
-            for item in deepValue:
-                #print(f'@@@ Field name: {item.commonName}') #debugline
-                if item.commonName in conversionToDict[conversionFromDict[currentNode.nType]["nodeTypeName"][0].commonName]: # get only the fromEngine fields that have an equivalent in toEngine fields
-                    intersectionDict.append(item.commonName)
-                    #print(f'@@@+ Found in {conversionFromDict[currentNode.nType]["nodeTypeName"][0].commonName}!') #debugline
-                    #print(item.commonName) #debugline
-    else:
-        print(f'\n! Node Converter: "{currentNode.name}" doesn\'t have the necessary conversion dictionaries! Skipping it...\n! - Missing dict for node type: {currentNode.nType}')
+    # The code below does the following:
+    # 1) get fromEngine to Common dict
+    # 2) get Common to ToEngine dict
+    # 3) compare fEtC's values to cttE's keys
+    #   - if they are the same, add them to the return dict
+    #   - where:| key= fromEngine's key
+    #           | value: list= toEngine's value appended to it
 
-    # {{{converting intersectionDict to toEngine field names from common into conversionDictToEngine
-    for i in range(0, len(intersectionDict)):
-        intersectionDictToEngine[intersectionDict[i]] = conversionToDict[conversionFromDict[currentNode.nType]["nodeTypeName"][0].commonName][intersectionDict[i]]
-        #print(f'+++ {intersectionDictToEngine}') #debugline
-    # }}}
-    return intersectionDictToEngine
+    dictIntersection: dict = {}
+    fromEFieldsDict = ENGINECONVERSIONS[FROMENGINES[fromEngine]][currentNode.nType]
+    toEFieldsDict = ENGINECONVERSIONS[TOENGINES[toEngine]][fromEFieldsDict["nodeTypeName"][0].commonName]
+
+    for k1, v1 in fromEFieldsDict.items():
+        dictIntersection[k1] = [] # it has to be a list bc one key can have multiple corresponging values in the other engine.
+        for item in v1:
+            for k2, v2 in toEFieldsDict.items():
+                if item.commonName == k2:
+                    dictIntersection[k1].append(v2)
+                    #print(f'ŁŁŁ from {k1}: {item.commonName}\n    || to {k2}: {v2}') #debugline
+        if dictIntersection[k1] == []:
+            del dictIntersection[k1]
+
+
+    return dictIntersection
 
 
 def connectNode(nodes: list[Node], currentNode: Node, fromEngine: str, toEngine: str):
@@ -918,7 +924,8 @@ def connectNode(nodes: list[Node], currentNode: Node, fromEngine: str, toEngine:
     #           - make the new connection using the gathered data
     #           - ???
     #           - profit
-    intersectionDictToEngineCurrentNode = getDictIntersection(currentNode, fromEngine, toEngine)
+    convertedIntersection = getDictIntersection(currentNode, fromEngine, toEngine)
+    print(convertedIntersection) #debugline
 
     if isinstance(currentNode.inCon, list):
         for x in currentNode.inCon:
@@ -928,9 +935,13 @@ def connectNode(nodes: list[Node], currentNode: Node, fromEngine: str, toEngine:
             oldNode: Node
             oNID: dict
             oldSelfSocketName: str = x[0].split(".")[1]
-            print(f'łłł {currentNode.convertedName}')
-            print(f'łłł - oldConnection Field Name: {oldConnectionFieldName}')
-            print(f'łłł - oldConnection Node  Name: {oldConnectionNodeName}')
+            print(f'łłł Finding connections for this: {currentNode.convertedName}') #debugline
+            print(f'łłł - oldConnection Field Node Name . connection name: {oldConnectionFieldName}.{oldConnectionNodeName}') #debugline
+            print(f'łłł -          ->         oldSelfName and Socket Name: {currentNode.name}.{oldSelfSocketName}') #debugline
+            print(f'łłł old socket name - new socket name:') #debugline
+            print(f'łłł ->  {convertedIntersection}') #debugline
+            print(f'łłł - new slefSocketName: {currentNode.convertedName}.{convertedIntersection[oldSelfSocketName]}') #debugline
+
 
             for node in nodes: # find connected node in sotred nodes
                 if oldConnectionNodeName == node.name:
@@ -940,15 +951,15 @@ def connectNode(nodes: list[Node], currentNode: Node, fromEngine: str, toEngine:
                     print(f'+ {oNID}') #debugline
                     break
             
-            # FIX: newSelfSocketName is not getting the correct value. It uses the old nodes socket name.
+            # FIX: newSelfSocketName is not getting the correct value. It uses the old node's socket name.
             # TODO: Convert it into the new socket type!
 
             try:
-                newConnectionName = oNID[oldConnectionFieldName]
-                newSelfSocketName = intersectionDictToEngineCurrentNode[oldSelfSocketName]
-                print(f'New connection name: {oldNode.convertedName}.{newConnectionName}') #debugLine
+                newConnectionsName: list = oNID[oldConnectionFieldName]
+                newSelfSocketName = convertedIntersection[oldSelfSocketName]
+                print(f'New connection name: {oldNode.convertedName}.{newConnectionsName}') #debugLine
                 print(f'New self-socket name: {currentNode.convertedName}.{newSelfSocketName}') #debugLine
-                cmd.connectAttr(f'{oldNode.convertedName}.{newConnectionName}', f'{currentNode.convertedName}.{newSelfSocketName}')
+                cmd.connectAttr(f'{oldNode.convertedName}.{newConnectionsName}', f'{currentNode.convertedName}.{newSelfSocketName}')
 
             except Exception as e:
                 print(f"\n! Node Converter: Node field with no dict entry found! Skipping field connection...")
