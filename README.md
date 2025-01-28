@@ -1,7 +1,7 @@
 # Node Network Converter for Autodesk Maya
 
 This script is for converting node networks from one render engine's nodes to another.
-In its current state it can only deal with rather basic networks (see [Current Scope](#cs) for details)
+In its current state it can only deal with rather basic networks (see [Current Capabilities](#current-capabilities) for details)
 
 ---
 
@@ -11,7 +11,7 @@ In its current state it can only deal with rather basic networks (see [Current S
 2) Open the Script Editor, copy paste or drag and drop the script onto a python tab and run the script
 3) Either use the `assign material to viewport selection` option or connect the newly created PxrSurface node to the Arnold network's blue shading group node (the node that's usually to the right of the aiStandardSurface)
 
-## Current Capabilities {#cs}
+## Current Capabilities
 
 ### Compatible engines
 
@@ -46,4 +46,4 @@ Conversion direction is only Arnold to Renderman, for now
 
 ---
 
-My Kofi: https://ko-fi.com/brightscripts
+☕ https://ko-fi.com/brightscripts

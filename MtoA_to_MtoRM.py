@@ -2,7 +2,9 @@ import maya.cmds as cmd
 import traceback
 
 # This conversion script has been written by Ronald Sendula
-# Contact for bug and other reports or questions:
+# For bug and other reports or questions open an issue on github:
+# https://github.com/bright-scripts/Node-Network-Converter-for-Autodesk-Maya/issues
+# Or contact me directly:
 # - Discord: mellow_moth
 
 
