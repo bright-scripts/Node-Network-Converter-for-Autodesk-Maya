@@ -11,6 +11,8 @@ In its current state it can only deal with rather basic networks (see [Current C
 2) Open the Script Editor, copy paste or drag and drop the script onto a python tab and run the script
 3) Either use the `assign material to viewport selection` option or connect the newly created PxrSurface node to the Arnold network's blue shading group node (the node that's usually to the right of the aiStandardSurface)
 
+https://github.com/user-attachments/assets/14f020c4-26dd-4eb6-b146-491e15c34f54
+
 ## Current Capabilities
 
 ### Compatible engines
