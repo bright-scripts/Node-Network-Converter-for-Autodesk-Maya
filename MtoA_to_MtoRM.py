@@ -933,11 +933,7 @@ def connectNode(nodes: list[Node], currentNode: Node, fromEngine: str, toEngine:
     Builds INCOMING connections the node (so on its left side) based on the original node networks connections
     '''
 
-    #{{{ TODO: - iterate through the inCon list of the current node
-    #           - reference node listed there and get its newNodeName if there's one, if there's None, TRY using the original name
-    #           - make the new connection using the gathered data
-    #           - ???
-    #           - profit
+    #{{{
     if currentNode.nType in ENGINECONVERSIONS[FROMENGINES[fromEngine]].keys():
         convertedIntersection = getDictIntersection(currentNode, fromEngine, toEngine)
     else: 
